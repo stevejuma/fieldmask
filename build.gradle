@@ -29,6 +29,7 @@ buildscript {
 plugins {
     id 'java'
     id 'jacoco'
+    id 'io.codearte.nexus-staging' version "$PLUGIN_NEXUS_STAGING_VER"
 }
 
 repositories {
@@ -45,13 +46,15 @@ subprojects {
     apply plugin: "org.jlleitschuh.gradle.ktlint"
     apply plugin: "jacoco"
     apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
 
     group "$PROJECT_GROUP"
 
     repositories {
         mavenLocal()
         mavenCentral()
-        jcenter()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     }
 
     compileJava {
@@ -110,6 +113,16 @@ subprojects {
             withJavadocJar()
         }
 
+        if (!version.toString().endsWith('-SNAPSHOT')) {
+            ext["signing.keyId"] = System.env.SIGNING_KEY_ID  ?: project.findProperty('signing.keyId')
+            ext["signing.password"] = System.env.SIGNING_PASSWORD  ?: project.findProperty('signing.password')
+            ext["signing.secretKeyRingFile"] = System.env.SIGNING_SECRET_KEY_RING_FILE  ?: project.findProperty('signing.secretKeyRingFile')
+
+            signing {
+                sign publishing.publications
+            }
+        }
+
         publishing {
             publications {
                 mavenJava(MavenPublication) {
@@ -153,16 +166,21 @@ subprojects {
                 maven {
                     name 'ossrh'
                     if (version.toString().endsWith("-SNAPSHOT")) {
-                        url "https://oss.sonatype.org/content/repositories/snapshots/"
+                        url "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                     } else {
-                        url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                        url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                     }
                     credentials {
-                        username = System.env.OSS_USER_TOKEN_KEY ?: project.findProperty('OSS_USER_TOKEN_KEY') ?: ''
-                        password = System.env.OSS_USER_TOKEN_PASS ?: project.findProperty('OSS_USER_TOKEN_PASS') ?: ''
+                        username = System.env.OSS_USER_TOKEN_KEY ?: project.findProperty('ossrh.username') ?: ''
+                        password = System.env.OSS_USER_TOKEN_PASS ?: project.findProperty('ossrh.password') ?: ''
                     }
                 }
             }
         }
     }
+}
+
+nexusStaging {
+    username = System.env.OSS_USER_TOKEN_KEY ?: project.findProperty('ossrh.username') ?: ''
+    password = System.env.OSS_USER_TOKEN_PASS ?: project.findProperty('ossrh.password') ?: ''
 }
