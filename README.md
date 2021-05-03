@@ -48,41 +48,33 @@ same resource, but let's assume we are only interested in the following fields:
 
 ### Full Resource Representation
 ```json
-	{
-	  "id": "12345",
-	  "name": "Avril Lavigne",
-	  "albumCount": 2,
-	  "songCount": 24,
-	  "albums": [
-        {
-            "id": "45678",
-            "title": "Let Go",
-            "artistId": "12345",
-            "releaseDate": "2002-06-04"        
-        }
-      ],
-      "songs": [
-         {
-           "id": "98765",
-           "title": "Complicated",
-           "albumId": 45678
-         }
-      ]
-	}
+{
+  "id": "12345",
+  "name": "Avril Lavigne",
+  "albumCount": 2,
+  "songCount": 24,
+  "albums": [
+    {
+        "id": "45678",
+        "title": "Let Go",
+        "artistId": "12345",
+        "releaseDate": "2002-06-04"        
+    }
+  ],
+  "songs": [
+     {
+       "id": "98765",
+       "title": "Complicated",
+       "albumId": 45678
+     }
+  ]
+}
 ```
 
 ### Partial Resource Representation
 [https://fieldmask.ju.ma/artists/12345?fields=name,albumCount,albums(title)](https://fieldmask.ju.ma/artists/12345?fields=name,albumCount,albums(name))
 ```json
-	{
-	  "name": "Avril Lavigne",
-	  "albumCount": 2,
-	  "albums": [
-        { 
-            "title": "Let Go"     
-        }
-      ] 
-	}
+
 ```
 As you can see, the partial response is a significant reduction in
 payload size and message complexity.  By allowing the consumer of the
