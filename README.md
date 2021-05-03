@@ -74,7 +74,15 @@ same resource, but let's assume we are only interested in the following fields:
 ### Partial Resource Representation
 [https://fieldmask.ju.ma/artists/12345?fields=name,albumCount,albums(title)](https://fieldmask.ju.ma/artists/12345?fields=name,albumCount,albums(name))
 ```json
-
+{
+  "name": "Avril Lavigne",
+  "albumCount": 2,
+  "albums": [
+    { 
+        "title": "Let Go"     
+    }
+  ]
+}
 ```
 As you can see, the partial response is a significant reduction in
 payload size and message complexity.  By allowing the consumer of the
