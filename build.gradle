@@ -1,0 +1,109 @@
+buildscript {
+    ext {
+        /*
+         * Versions @ https://github.com/JetBrains/kotlin/releases/latest
+         * Pick versions suffixed with `-release`
+         * More likely to be limited by the version of the all-open plugin @
+         * https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-maven-allopen
+         */
+        kotlinVersion = "$LIB_KOTLIN_VER"
+        /*
+        * Versions @ https://github.com/spring-projects/spring-boot/releases
+        * Always pick versions suffixed with `.RELEASE`
+        **/
+        springBootVersion = "$LIB_SPRING_BOOT_VER"
+    }
+
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
+        classpath "org.jlleitschuh.gradle:ktlint-gradle:10.0.0"
+    }
+}
+
+plugins {
+    id 'java'
+    id 'jacoco'
+}
+
+repositories {
+    mavenCentral()
+}
+
+apply plugin: "org.jlleitschuh.gradle.ktlint-idea"
+
+subprojects {
+    apply plugin: 'kotlin'
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+    apply plugin: 'java'
+    apply plugin: "org.jlleitschuh.gradle.ktlint"
+    apply plugin: "jacoco"
+    apply plugin: 'maven-publish'
+
+    group "$PROJECT_GROUP"
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+
+    compileJava {
+        sourceCompatibility = SOURCE_COMPATIBILITY
+        targetCompatibility = TARGET_COMPATIBILITY
+    }
+
+    compileKotlin {
+        kotlinOptions {
+            freeCompilerArgs = ['-Xjsr305=strict', '-Xjvm-default=compatibility']
+            jvmTarget = TARGET_COMPATIBILITY
+        }
+    }
+
+    compileTestKotlin {
+        kotlinOptions {
+            freeCompilerArgs = ['-Xjsr305=strict', '-Xjvm-default=compatibility']
+            jvmTarget = TARGET_COMPATIBILITY
+        }
+    }
+
+    test {
+        dependsOn ktlintCheck
+        useJUnitPlatform()
+        finalizedBy jacocoTestReport
+        testLogging {
+            events "PASSED", "FAILED", "SKIPPED", "STANDARD_ERROR", "STANDARD_OUT"
+            showExceptions true
+            showCauses true
+            showStackTraces true
+            exceptionFormat "FULL"
+            showStandardStreams System.getenv("TEST_STDOUT") == 'true'
+        }
+    }
+
+    jacocoTestReport {
+        dependsOn test
+    }
+
+    dependencies {
+        implementation "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
+        implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
+    }
+
+    if (!it.name.startsWith('example')) {
+        tasks.withType(GenerateModuleMetadata) {
+            enabled = false
+        }
+
+        java {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+}

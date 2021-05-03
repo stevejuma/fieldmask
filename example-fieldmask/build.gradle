@@ -1,0 +1,29 @@
+plugins {
+    id "org.springframework.boot" version "$springBootVersion" apply false
+}
+
+apply plugin: "io.spring.dependency-management"
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-starter-parent:$springBootVersion"
+    }
+}
+
+dependencies {
+    implementation project(':fieldmask-core')
+    implementation project(':fieldmask-boot-autoconfigure')
+    implementation 'com.graphql-java:java-dataloader:2.2.3'
+
+    implementation group: 'com.querydsl', name: 'querydsl-core', version: '4.4.0'
+    implementation 'org.apache.lucene:lucene-queryparser:8.7.0'
+    implementation "org.springframework.boot:spring-boot-starter-web"
+
+    /* Making use of JUnit 5 */
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude module: 'junit'
+        exclude module: 'junit-vintage-engine'
+    }
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}

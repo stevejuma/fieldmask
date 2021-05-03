@@ -1,0 +1,50 @@
+apply plugin: 'antlr'
+
+dependencies {
+    implementation 'org.apache.lucene:lucene-queryparser:8.7.0'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.1'
+    implementation group: 'com.querydsl', name: 'querydsl-core', version: '4.4.0'
+    implementation 'org.jetbrains.kotlin:kotlin-reflect'
+
+    /* ANTLR  */
+    antlr "org.antlr:antlr4:4.8"
+    compile "org.antlr:antlr4-runtime:4.8"
+
+    /* Making use of JUnit 5 */
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.6.1'
+}
+
+generateGrammarSource {
+    maxHeapSize = "64m"
+    arguments += ['-package', 'ma.ju.fieldmask.grammar']
+    outputDirectory = file("src/main/java/ma/ju/fieldmask/grammar")
+}
+
+jacocoTestReport {
+    group = "Reporting"
+    reports {
+        xml.enabled false
+        csv.enabled false
+    }
+    afterEvaluate {
+        getClassDirectories().setFrom(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "ma/ju/fieldmask/grammar/**"
+            ])
+        })
+    }
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            enabled = true
+            limit {
+                minimum = 0.5
+            }
+        }
+    }
+}
+
+compileJava.dependsOn generateGrammarSource
+

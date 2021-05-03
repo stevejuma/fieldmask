@@ -1,0 +1,14 @@
+buildscript {
+    pluginManagement {
+        repositories {
+            gradlePluginPortal()
+        }
+    }
+}
+
+rootProject.name = 'fieldmask'
+
+include ":fieldmask-core"
+include ":fieldmask-boot-autoconfigure"
+include ":fieldmask-starter"
+include ":example-fieldmask"
