@@ -14,28 +14,29 @@ jobs:
     needs: validation
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Java
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
+          java-version: '8'
           distribution: 'zulu'
-          java-version: 8
-      - name: Cache Gradle
+      - name: Cache Gradle packages
         uses: actions/cache@v2
-        env:
-          java-version: 8
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-${{ env.java-version }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/gradle.properties') }}
           restore-keys: |
-            ${{ runner.os }}-${{ env.java-version }}-gradle-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-      - name: Gradle Check
-        run:  gradle clean test
+            ${{ runner.os }}-gradle-
+      - name: Build with Gradle
+        run: ./gradlew clean build
+      - name: Cleanup Gradle Cache
+        # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
+        # Restoring these files from a GitHub Actions cache might cause problems for future builds.
+        run: |
+          rm -f ~/.gradle/caches/modules-2/modules-2.lock
+          rm -f ~/.gradle/caches/modules-2/gc.properties
 
   build:
     name: Publish release
