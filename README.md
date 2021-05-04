@@ -15,11 +15,16 @@ repositories {
 }
 
 dependencies {
-  implementation 'ma.ju:fieldmask-starter:1.0.0'
+  # If using the core library only 
+  implementation 'ma.ju.fieldmask:fieldmask-core:1.0.0' 
+  # If using Spring Boot 
+  implementation 'ma.ju.fieldmask:fieldmask-starter:1.0.0'
+  # If using Spring MVC 
+  implementation 'ma.ju.fieldmask:fieldmask-boot-autoconfigure:1.0.0'
 }
 ```
 
-# fieldmask
+# FieldMask
 
 Fieldmask is a framework for supporting partial JSON responses in  
 RESTful web services by allowing users to supply arbitrary queries in the URL.
