@@ -1,7 +1,5 @@
 package ma.ju.fieldmask.core
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectMapper
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
@@ -56,11 +54,6 @@ interface FieldResolver<T> {
 
 interface FieldModel<T> {
     fun model(): T
-}
-
-inline fun <reified T> FieldModel<*>.value(mapper: ObjectMapper = ObjectMapper()): T {
-    val json = mapper.writeValueAsString(model())
-    return mapper.readValue(json, object : TypeReference<T>() {})
 }
 
 interface ListModel<T> : FieldModel<T> {

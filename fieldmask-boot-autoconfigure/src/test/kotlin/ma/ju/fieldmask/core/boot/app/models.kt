@@ -1,5 +1,6 @@
 package ma.ju.fieldmask.core.boot.app
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.springframework.stereotype.Service
 
 data class Artist(var id: Long, var name: String) {
@@ -7,7 +8,16 @@ data class Artist(var id: Long, var name: String) {
     override fun hashCode() = id.hashCode()
 }
 
-data class Album(var id: Long, var title: String, var artistId: Long, var year: Long) {
+data class Album(
+    @JsonProperty("id")
+    var id: Long,
+    @JsonProperty("title")
+    var title: String,
+    @JsonProperty("artistId")
+    var artistId: Long,
+    @JsonProperty("year")
+    var year: Long
+) {
     override fun equals(other: Any?) = (other is Album?) && id == other?.id
     override fun hashCode() = id.hashCode()
 }

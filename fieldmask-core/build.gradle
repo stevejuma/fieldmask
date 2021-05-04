@@ -1,9 +1,6 @@
 apply plugin: 'antlr'
 
 dependencies {
-    implementation 'org.apache.lucene:lucene-queryparser:8.7.0'
-    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.1'
-    implementation group: 'com.querydsl', name: 'querydsl-core', version: '4.4.0'
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
 
     /* ANTLR  */
@@ -12,6 +9,7 @@ dependencies {
 
     /* Making use of JUnit 5 */
     testImplementation 'org.junit.jupiter:junit-jupiter:5.6.1'
+    testImplementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.12.1'
 }
 
 generateGrammarSource {

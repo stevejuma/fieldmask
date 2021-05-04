@@ -1,6 +1,5 @@
 package ma.ju.fieldmask.core
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertIterableEquals
@@ -25,13 +24,9 @@ class TestClassResolver : FieldResolver<TestClass> {
 }
 
 data class Song(
-    @JsonProperty("id")
     var id: Long,
-    @JsonProperty("title")
     var title: String,
-    @JsonProperty("artist")
     var artist: Artist? = null,
-    @JsonProperty("album")
     var album: Album? = null
 ) {
     override fun toString(): String = "Song<$title>"
@@ -39,13 +34,9 @@ data class Song(
 }
 
 data class Album(
-    @JsonProperty("id")
     var id: Long,
-    @JsonProperty("title")
     var title: String,
-    @JsonProperty("artist")
     var artist: Artist? = null,
-    @JsonProperty("songs")
     var songs: MutableList<Song> = mutableListOf()
 ) {
     override fun toString(): String = "Album<$title> | Songs[$songs]"
@@ -151,22 +142,6 @@ class ModelsTest {
         assertDoesNotThrow {
             FieldMask.mask(peter, "unknown", MaskOptions(validateMasks = false))
         }
-    }
-
-    @Test
-    fun `returns correct type`() {
-        val entity: Album = Album(2, "Album A1").let { album ->
-            album.songs.addAll(
-                listOf(
-                    Song(3, "Song A1-S1"),
-                    Song(4, "Song A1-S2")
-                )
-            )
-            album
-        }
-        val mask = FieldMask.mask(entity, "*")
-        val result: Album = mask.value()
-        assertEquals(entity, result)
     }
 
     @Test

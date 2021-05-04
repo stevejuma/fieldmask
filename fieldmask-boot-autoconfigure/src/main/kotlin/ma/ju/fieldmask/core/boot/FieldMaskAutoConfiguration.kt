@@ -1,5 +1,8 @@
 package ma.ju.fieldmask.core.boot
 
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
+import ma.ju.fieldmask.core.FieldModel
 import ma.ju.fieldmask.core.ParseException
 import ma.ju.fieldmask.core.UnknownFieldMaskException
 import org.springframework.beans.factory.annotation.Autowired
@@ -33,4 +36,9 @@ open class FieldMaskAutoConfiguration : WebMvcConfigurer {
     fun handleInvalidMask(ex: UnknownFieldMaskException, res: HttpServletResponse) {
         res.sendError(HttpStatus.BAD_REQUEST.value(), ex.message)
     }
+}
+
+inline fun <reified T> FieldModel<*>.value(mapper: ObjectMapper = ObjectMapper()): T {
+    val json = mapper.writeValueAsString(model())
+    return mapper.readValue(json, object : TypeReference<T>() {})
 }

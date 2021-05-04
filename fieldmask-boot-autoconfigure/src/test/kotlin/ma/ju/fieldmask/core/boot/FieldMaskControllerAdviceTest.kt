@@ -1,5 +1,8 @@
 package ma.ju.fieldmask.core.boot
 
+import ma.ju.fieldmask.core.FieldMask
+import ma.ju.fieldmask.core.boot.app.Album
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -105,5 +108,13 @@ class FieldMaskControllerAdviceTest @Autowired constructor(
             """
                 )
             )
+    }
+
+    @Test
+    fun `returns correct type`() {
+        val entity: Album = Album(2, "Album A1", 1, 2020)
+        val mask = FieldMask.mask(entity, "*")
+        val result: Album = mask.value()
+        Assertions.assertEquals(entity, result)
     }
 }
