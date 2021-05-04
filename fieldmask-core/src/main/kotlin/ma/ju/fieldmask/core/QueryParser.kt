@@ -11,8 +11,10 @@ import org.antlr.v4.runtime.Recognizer
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import java.util.Stack
 
-class ParseException(message: String) : RuntimeException(message)
-
+/**
+ * ANTLR error listener for checking for field parsing exceptions
+ * @property errors The list of errors encountered
+ */
 class SyntaxErrorListener(val errors: MutableList<String> = mutableListOf()) : BaseErrorListener() {
     override fun syntaxError(
         recognizer: Recognizer<*, *>?,
@@ -26,75 +28,177 @@ class SyntaxErrorListener(val errors: MutableList<String> = mutableListOf()) : B
     }
 }
 
+/**
+ * Segment is single property in a given depth for a specified [Path]
+ * E.g /a/b/c all the parts `[a,b,c]` are segments. A segment can also
+ * optionally have a prefix. The prefix comes before the segment and is
+ * denoted by a colon. E.g `me:a/you:b` In this case `me` is an alias for `a`
+ * and `you` is an alias of `b`
+ *
+ * @property value The value of the segment
+ * @property alias The alias of the segment if any. Defaults to the value if not provided
+ */
 data class Segment(val value: String, val alias: String = value) {
+    /**
+     * A property indicating if the segment has an alias
+     */
     val aliased: Boolean = (value != alias) && alias.isNotBlank()
+
+    /**
+     * Returns the [alias] if the segment is [aliased] otherwise returns
+     * the [value] of the segment
+     */
     val field get() = if (aliased) alias else value
 
+    /**
+     * Returns the [value] of the segment
+     */
     override fun toString() = value
     override fun equals(other: Any?) = (other is Segment?) && value == other?.value
     override fun hashCode() = value.hashCode()
 
     companion object {
         private val parser = FieldQueryParser()
-        fun from(vararg paths: String) = from(paths.toList())
 
-        fun from(paths: List<String>, separator: String = "/") = paths.map { from(it, separator) }
+        /**
+         * Creates a list of [Segment] from the provided [segments]
+         * @param segments The strings to parse into segments
+         * @return The list of parsed segments
+         */
+        fun from(vararg segments: String) = from(segments.toList())
 
+        /**
+         * Creates a list of [Segment] from the provided [segments]
+         * @return The list of parsed segments
+         */
+        fun from(segments: List<String>, separator: String = "/") = segments.map { from(it, separator) }
+
+        /**
+         * Creates a [Segment] from the specified string. Throws a [ParseException] if multiple
+         * segments are located in the [value]
+         * @return The parsed segment
+         */
         fun from(value: String, separator: String = "/"): Segment {
             val paths = parser.parse(value, separator)
             if (paths.size != 1 || paths.first().paths.size != 1) {
-                throw IllegalArgumentException("Invalid segment: $value. Returned [$paths] expected single segment")
+                throw ParseException("Invalid segment: $value. Returned [$paths] expected single segment")
             }
             return paths.first().paths.first()
         }
     }
 }
 
-class Path(val paths: MutableList<Segment> = mutableListOf(), private val separator: String = "/") {
-    fun add(vararg path: Segment) = add(path.toList())
-    fun add(path: List<Segment>) = paths.addAll(path)
-
+/**
+ * Path is a collection of segments denoting a hierarchy of an object.
+ * You can think of this like a directory structure. Each segment after
+ * the separator `/` denotes a new depth in the hierarchy.
+ * Example:
+ *  a/b/c, a/b, a
+ * The separator is configurable and defaults to a `/` if not provided.
+ * Irrespective of the separator the individual parts will always be stored
+ * separately
+ *
+ * @param paths The list of segments that make up this path
+ * @param separator The separator to use when displaying this path
+ */
+class Path(val paths: MutableList<Segment> = mutableListOf(), val separator: String = "/") {
+    /**
+     * Creates a [Path] with the specified variable  [segments]
+     */
     constructor(vararg segments: String) : this() {
         paths.addAll(segments.toList().map { Segment(it) })
     }
 
+    /**
+     * Creates a [Path] with the specified variable [segments]
+     */
     constructor(vararg segments: Segment) : this() {
         paths.addAll(segments.toList())
     }
 
+    /**
+     * Adds the specified [segment] to the [Path]
+     */
+    fun add(vararg segment: Segment) = add(segment.toList())
+
+    /**
+     * Adds the specified [segments] List to the [Path]
+     */
+    fun add(segments: List<Segment>) = paths.addAll(segments)
+
+    /**
+     * Fetches the depth of this [Path]
+     * @return the size/depth of the path
+     */
     val size get() = paths.size
 
+    /**
+     * Appends the specified [path] to this one, returning this [Path]
+     * @return [Path]
+     */
     fun append(path: Path): Path {
         paths.addAll(path.paths)
         return this
     }
 
-    fun startsWith(path: List<Segment>): Boolean {
-        if (path.isNotEmpty() && paths.size >= path.size) {
-            return paths.subList(0, path.size) == path
+    /**
+     * Checks if this path starts with the specified [segments]
+     * @return boolean indicating if the path starts with the segment
+     */
+    fun startsWith(segments: List<Segment>): Boolean {
+        if (segments.isNotEmpty() && paths.size >= segments.size) {
+            return paths.subList(0, segments.size) == segments
         }
         return false
     }
 
-    fun trimPrefix(path: List<Segment>): Path {
-        if (startsWith(path)) {
-            return Path(paths.subList(path.size, paths.size), separator)
+    /**
+     * Removes the specified [segments] from this path if the path starts
+     * with the specified prefix
+     * @return a new [Path] object with the prefix trimmed.
+     */
+    fun trimPrefix(segments: List<Segment>): Path {
+        if (startsWith(segments)) {
+            return Path(paths.subList(segments.size, paths.size), separator)
         }
         return this
     }
 
+    /**
+     * Joins the specified [path] to this one.
+     */
     fun join(path: Path) = copy().apply { add(path.paths.toList()) }
-    fun join(vararg path: Segment) = copy().apply { add(path.toList()) }
 
-    fun copy() = Path(paths.toMutableList(), separator)
+    /**
+     * Adds the specified [segments] to the path
+     */
+    fun join(vararg segments: Segment) = copy().apply { add(segments.toList()) }
 
+    /**
+     * Creates a new copy of this Path with the specified parameters
+     */
+    fun copy(separator: String? = null) = Path(paths.toMutableList(), separator ?: this.separator)
+
+    /**
+     * Returns the string representation of this [Path]. With the segments
+     * concatenated with the [separator]
+     */
     override fun toString() = paths.joinToString(separator)
 }
 
+/**
+ * A simple tree structure for parsing the AST from ANTLR
+ * @property field The [Path] tied to this Field
+ * @property children the [Field] that have this one as their parent
+ */
 data class Field(
     var field: Path,
     var children: MutableList<Field> = mutableListOf()
 ) {
+    /**
+     * Fetches all the paths of this [Field] and all its descendants
+     * @return List of [Path] for this tree
+     */
     fun fields(): MutableList<Path> {
         var paths = mutableListOf<Path>()
         if (children.isEmpty()) {
@@ -226,10 +330,19 @@ class FieldQueryParser {
     }
 }
 
+/**
+ * ANTLR grammar Listener for parsing the AST
+ * @property separator The separator to use for the created [Path]
+ */
 class FieldsQueryListener(private val separator: String) : FieldsGrammarBaseListener() {
     private var roots = Stack<Field>()
     private var root = Field(Path(separator = separator))
 
+    /**
+     * Fetches the result of a parsing run. Throws [ParseException] if there
+     * was an error with the query string
+     * @return list of [Path] located from the AST
+     */
     fun fields(): List<Path> {
         if (roots.isEmpty()) {
             return root.fields()

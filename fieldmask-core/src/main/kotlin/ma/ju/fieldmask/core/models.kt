@@ -15,10 +15,18 @@ import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaGetter
 import kotlin.reflect.jvm.jvmErasure
 
+/**
+ * Checks if the specified [property] is publicly accessible
+ * @return boolean indicating the field visibility
+ */
 fun isFieldAccessible(property: KProperty1<*, *>): Boolean {
     return property.javaGetter?.modifiers?.let { !Modifier.isPrivate(it) } ?: false
 }
 
+/**
+ * Checks if the specified [any] object is a primitive value
+ * @return boolean indicating if the object is a primitive
+ */
 fun isPrimitive(any: Any): Boolean {
     val clazz = if (any is Class<*>) any else any.javaClass
     return (
@@ -29,13 +37,28 @@ fun isPrimitive(any: Any): Boolean {
         Instant::class.java.isAssignableFrom(clazz)
 }
 
-class UnknownFieldMaskException(
-    val fields: List<Path>,
-    expected: List<Path> = listOf(),
-    message: String = "invalid field masks provided: $fields expected one of $expected"
-) : RuntimeException(message)
-
+/**
+ * FieldResolver is used to resolve properties for fields of type T. Resolvers always
+ * take precedence over fields defined in the object. The name of the functions defined
+ * in the resolver should match the name of the property. E.g for a property named `songCount`
+ * the code will search for methods of the following signature (in order):
+ *
+ *  - `fun songCount/getSongCount(artist: Artist, context: Context)`
+ *  - `fun songCount/getSongCount(artist: Artist)`
+ *  - `fun songCount/getSongCount()`
+ *
+ * ```kotlin
+ *  class ArtistResolver : FieldResolver<Artist> {
+ *      fun songCount(artist: Artist): Long = artist.songs.size
+ *  }
+ * ```
+ *
+ * @property T The object whose fields will be resolved
+ */
 interface FieldResolver<T> {
+    /**
+     * Fetches the Type for this resolver
+     */
     @Suppress("UNCHECKED_CAST")
     fun dataType(): Class<T> {
         javaClass.genericInterfaces.forEach { iface ->
@@ -52,25 +75,65 @@ interface FieldResolver<T> {
     }
 }
 
+/**
+ * Interface for data model
+ * @property T the underlying type for the model
+ */
 interface FieldModel<T> {
+    /**
+     * The underlying data for this model
+     */
     fun model(): T
 }
 
+/**
+ * Generic interface for a List backed model
+ * @property T the underlying list
+ */
 interface ListModel<T> : FieldModel<T> {
+    /**
+     * Adds the [value] to the list
+     */
     fun add(value: Any?)
+
+    /**
+     * Creates a new [MapModel] and adds it to the list
+     */
     fun createMap(): MapModel<*>
 }
 
+/**
+ * Generic interface for a Map backed model
+ * @property T the underlying Map
+ */
 interface MapModel<T> : FieldModel<T> {
+    /**
+     * Adds the [value] to the map with the specified [key]
+     */
     fun add(key: String, value: Any?)
+
+    /**
+     * Creates a new model with the specified [name]
+     */
     fun createMap(name: String): MapModel<*>
+
+    /**
+     * Creates a new list model with the [name]
+     */
     fun createList(name: String): ListModel<*>
 }
 
+/**
+ * An empty model that returns null
+ */
 class NullModel : FieldModel<Nothing?> {
     override fun model() = null
 }
 
+/**
+ * Default implementation of the [ListModel] using a [MutableList]
+ * @property list The list that will back this model
+ */
 class DefaultListModel(private val list: MutableList<Any?> = mutableListOf()) : ListModel<MutableList<Any?>> {
     override fun model() = list
 
@@ -85,6 +148,10 @@ class DefaultListModel(private val list: MutableList<Any?> = mutableListOf()) : 
     }
 }
 
+/**
+ * Default implementation of the [MapModel] using a [MapModel]
+ * @property map The map that will back this model
+ */
 class DefaultMapModel(private val map: MutableMap<String, Any?> = linkedMapOf()) : MapModel<MutableMap<String, Any?>> {
     override fun createMap(name: String): MapModel<*> {
         val child = DefaultMapModel()
@@ -127,12 +194,28 @@ data class MaskOptions(
      */
     val futureHandler: (List<CompletableFuture<*>>) -> Unit = { }
 ) {
+    /**
+     * A map of resolvers with the dataType as the key and the resolver
+     * as a value
+     */
     val resolversMap = resolvers.map { it.dataType() to it }.toMap()
 }
 
+/**
+ * FieldMask is responsible for masking and unmasking objects
+ */
 @Suppress("UNCHECKED_CAST")
 object FieldMask {
 
+    /**
+     * The Context used when parsing the field masks
+     *
+     * @property mask The list of paths to either mask or copy
+     * @property root The parent [Path] for this context
+     * @property options The options for the field processing
+     * @property futures The list of futures that are waiting to be loaded
+     * @property properties A map with generic properties that Loaders can use to store state
+     */
     data class Context(
         val mask: PathList,
         val root: Path = Path(),
@@ -140,16 +223,39 @@ object FieldMask {
         val futures: MutableList<CompletableFuture<*>> = mutableListOf(),
         val properties: MutableMap<String, Any?> = mutableMapOf()
     ) {
+        /**
+         * Checks if the Loaded mask matches the specified [path] segment
+         */
         fun matches(path: Segment) = mask.matches(root.join(path))
+
+        /**
+         * Returns a copy of this context with the [root] joined to the specified [path]
+         */
         fun withRoot(path: Segment): Context {
             return copy(root = root.copy().join(path))
         }
     }
 
+    /**
+     * Copies all the properties from [source] to [target] that match the specified mask [query]
+     * with the specified [options]
+     *
+     * @param source The object to copy the properties from
+     * @param target The object to copy the properties to
+     * @param query The field mask query to use to select the fields to copy
+     * @param options The options to use to apply the properties
+     */
     fun <T : Any> apply(source: T, target: T, query: String, options: MaskOptions = MaskOptions()) {
         apply(source, target, Context(PathList.matcherFor(query), Path(), options))
     }
 
+    /**
+     * Copies all the properties from [source] to [target] that match the specified [context]
+     *
+     * @param source The object to copy the properties from
+     * @param target The object to copy the properties to
+     * @param context The context ot use to apply the properties
+     */
     fun <T : Any> apply(source: T, target: T, context: Context) {
         if (!source::class.java.isAssignableFrom(target::class.java)) {
             throw java.lang.IllegalArgumentException("source class: ${source.javaClass} is not assignable from ${target.javaClass}")
@@ -261,12 +367,26 @@ object FieldMask {
         }
     }
 
+    /**
+     * Masks all the fields in [instance] that match the specified [query] with the given [options]
+     * @return [FieldModel] containing only the properties that matched the [query]
+     *
+     * @param instance The object to apply the masks to
+     * @param query The field mask query to parse
+     * @param options The options to use to mask the properties
+     */
     fun mask(instance: Any?, query: String, options: MaskOptions = MaskOptions()): FieldModel<*> {
         return mask(
             instance, Context(PathList.matcherFor(query), Path(), options)
         )
     }
 
+    /**
+     * Masks all the fields in [instance] that match the specified [context]
+     *
+     * @param instance The object to apply the masks to
+     * @param context The context to use to mask the fields
+     */
     fun mask(instance: Any?, context: Context): FieldModel<*> {
         if (instance == null) return NullModel()
         val data = when (instance) {
@@ -290,21 +410,6 @@ object FieldMask {
             context.options.futureHandler(context.futures)
         }
         return data
-    }
-
-    fun mask(instance: Any?, model: FieldModel<*>, context: Context) {
-        if (instance == null) return
-        when (instance) {
-            is Iterable<*> -> {
-                visitList(instance, model as ListModel<*>, context)
-            }
-            is Map<*, *> -> {
-                visitMap(instance, model as MapModel<*>, context)
-            }
-            else -> {
-                visitPojo(instance, model as MapModel<*>, context)
-            }
-        }
     }
 
     private fun visitList(instance: Iterable<*>?, model: ListModel<*>, context: Context) {

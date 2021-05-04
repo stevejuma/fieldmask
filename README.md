@@ -15,11 +15,11 @@ repositories {
 }
 
 dependencies {
-  # If using the core library only 
-  implementation 'ma.ju.fieldmask:fieldmask-core:1.0.0' 
-  # If using Spring Boot 
+  // If using the core library only
+  implementation 'ma.ju.fieldmask:fieldmask-core:1.0.0'
+  // If using Spring Boot
   implementation 'ma.ju.fieldmask:fieldmask-starter:1.0.0'
-  # If using Spring MVC 
+  // If using Spring MVC
   implementation 'ma.ju.fieldmask:fieldmask-boot-autoconfigure:1.0.0'
 }
 ```

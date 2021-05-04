@@ -1,5 +1,11 @@
 package ma.ju.fieldmask.core
 
+/**
+ * PathList holds a collection of [Path].
+ *
+ * @param fields The list of paths to add to this object
+ * @param separator The separator to use for the path segments
+ */
 open class PathList(fields: List<Path> = listOf(), private val separator: String = "/") {
     private val paths = mutableMapOf<String, Path>()
 
@@ -15,15 +21,37 @@ open class PathList(fields: List<Path> = listOf(), private val separator: String
         }
     }
 
+    /**
+     * Checks if this collection is empty
+     */
     fun empty() = paths.isEmpty()
 
+    /**
+     * Checks if the specified [path] matches the defined [Path] in this collection
+     * @param path The path to check for a match
+     */
     fun matches(path: String) = matches(path.split(separator))
 
+    /**
+     * Checks if the specified [path] matches the defined [Path] in this collection
+     * @param path The path to check for a match
+     * @return boolean if there is a match
+     */
     fun matches(path: Path) = matches(path.paths)
 
+    /**
+     * Checks if the specified strings in [parts] match the defined [Path] in this collection
+     * @param parts The list of parts to check for a match
+     * @return boolean if there is a match
+     */
     @JvmName("matchesString")
     fun matches(parts: List<String>) = matches(Segment.from(parts))
 
+    /**
+     * Checks if the specified list of [parts] matches the specified [Path] in this collection
+     * @param parts The list of segments to check for a match
+     * @return boolean if there is a match
+     */
     fun matches(parts: List<Segment>): Path {
         if (parts.isEmpty()) return Path()
         if (paths.containsKey("*") || parts == listOf(Segment("*"))) return Path(parts.toMutableList())
@@ -76,11 +104,22 @@ open class PathList(fields: List<Path> = listOf(), private val separator: String
         return matchedKey
     }
 
+    /**
+     * Removes the [prefix] from the paths defined in this collections
+     * @return New [PathList] with paths that only contain the [prefix] with
+     * the prefix removed
+     */
     fun trimPrefix(prefix: Path): PathList {
         val fields = paths.values.filter { it.startsWith(prefix.paths) }.map { it.trimPrefix(prefix.paths) }
         return PathList(fields, separator)
     }
 
+    /**
+     * Fetches only the paths that match the specified prefix
+     * @param prefix The prefix to check for patches
+     * @param trim Boolean indicating whether the prefix matched should be trimmed
+     * @return New [PathList] with the matching prefixes
+     */
     fun withPrefix(prefix: Path, trim: Boolean = false): PathList {
         if (prefix.paths.isEmpty()) {
             return copy()
@@ -91,8 +130,14 @@ open class PathList(fields: List<Path> = listOf(), private val separator: String
         return PathList(fields, separator)
     }
 
+    /**
+     * Fetches all the paths in the collection
+     */
     fun values() = paths.values.toList()
 
+    /**
+     * Creates a copy of this collection with the specified properties
+     */
     fun copy() = PathList(paths.values.toMutableList(), separator)
 
     override fun toString(): String = "separator: $separator paths: ${paths.values}"
