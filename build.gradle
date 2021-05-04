@@ -183,4 +183,5 @@ subprojects {
 nexusStaging {
     username = System.env.OSS_USER_TOKEN_KEY ?: project.findProperty('ossrh.username') ?: ''
     password = System.env.OSS_USER_TOKEN_PASS ?: project.findProperty('ossrh.password') ?: ''
+    packageGroup =  "$PROJECT_GROUP"
 }
