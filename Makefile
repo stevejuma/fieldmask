@@ -6,5 +6,8 @@ debug:
 release:
 	./gradlew clean assemble publish
 
+publish
+	./gradlew clean build publish closeAndReleaseRepository
+
 grammar:
 	./gradlew -p fieldmask-core clean generateGrammarSource
