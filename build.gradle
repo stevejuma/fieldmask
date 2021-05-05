@@ -128,6 +128,8 @@ subprojects {
         publishing {
             publications {
                 mavenJava(MavenPublication) {
+                    from components.java
+
                     // to avoid "Publication only contains dependencies and/or constraints without a version" error
                     // see https://docs.gradle.org/6.2.1/userguide/publishing_maven.html#publishing_maven:resolved_dependencies
                     versionMapping {
