@@ -11,8 +11,7 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation project(':fieldmask-core')
-    implementation project(':fieldmask-boot-autoconfigure')
+    implementation project(':fieldmask-starter')
     implementation 'com.graphql-java:java-dataloader:2.2.3'
     implementation "org.springframework.boot:spring-boot-starter-web"
     /* Making use of JUnit 5 */

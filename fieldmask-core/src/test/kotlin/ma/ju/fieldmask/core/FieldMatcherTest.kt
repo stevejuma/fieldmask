@@ -18,7 +18,7 @@ class FieldMatcherTest {
                 "a/b/d/zz/y" to false
             )
         ).forEach { (q, expected) ->
-            val matcher = PathList.matcherFor(q)
+            val matcher = FieldMask.matcherFor(q)
             expected.forEach { (k, v) ->
                 assertEquals(v, matcher.matches(k).paths.isNotEmpty(), "$q MATCHES $k => $v")
             }

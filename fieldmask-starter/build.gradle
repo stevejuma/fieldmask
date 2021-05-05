@@ -11,6 +11,6 @@ dependencyManagement {
 }
 
 dependencies {
-    implementation(project(':fieldmask-core'))
-    implementation(project(':fieldmask-boot-autoconfigure'))
+    api(project(':fieldmask-core'))
+    api(project(':fieldmask-spring'))
 }

@@ -1,11 +1,11 @@
-package ma.ju.fieldmask.core.boot.app
+package ma.ju.fieldmask.spring.app
 
+import ma.ju.fieldmask.core.BeanMask
 import ma.ju.fieldmask.core.FieldMask
 import ma.ju.fieldmask.core.FieldResolver
-import ma.ju.fieldmask.core.PathList
-import ma.ju.fieldmask.core.boot.DefaultFieldMaskContextBuilder
-import ma.ju.fieldmask.core.boot.FieldMaskProperties
-import ma.ju.fieldmask.core.boot.FieldMaskResponseBody
+import ma.ju.fieldmask.spring.DefaultFieldMaskContextBuilder
+import ma.ju.fieldmask.spring.FieldMaskProperties
+import ma.ju.fieldmask.spring.FieldMaskResponseBody
 import org.dataloader.DataLoader
 import org.dataloader.DataLoaderRegistry
 import org.springframework.beans.factory.annotation.Autowired
@@ -43,13 +43,13 @@ class ArtistFieldResolver(private val repository: MusicRepository) : FieldResolv
         return repository.countAlbumsByArtistId(artist.id)
     }
 
-    fun songs(artist: Artist, context: FieldMask.Context): CompletableFuture<List<Song>> {
+    fun songs(artist: Artist, context: BeanMask.Context): CompletableFuture<List<Song>> {
         val registry = context.properties["dataLoaderRegistry"] as DataLoaderRegistry
         val loader: DataLoader<Long, List<Song>> = registry.getDataLoader("ArtistSongsLoader")
         return loader.load(artist.id)
     }
 
-    fun albums(artist: Artist, context: FieldMask.Context): CompletableFuture<List<String>> {
+    fun albums(artist: Artist, context: BeanMask.Context): CompletableFuture<List<String>> {
         val registry = context.properties["dataLoaderRegistry"] as DataLoaderRegistry
         val loader: DataLoader<Long, List<String>> = registry.getDataLoader("ArtistAlbumsLoader")
         return loader.load(artist.id)
@@ -101,7 +101,7 @@ class ContextBuilder(
         return registry
     }
 
-    override fun build(paths: PathList, properties: FieldMaskProperties): FieldMask.Context {
+    override fun build(paths: FieldMask, properties: FieldMaskProperties): BeanMask.Context {
         val ctx = super.build(paths, properties)
         val registry = buildRegistry()
         return ctx.copy(

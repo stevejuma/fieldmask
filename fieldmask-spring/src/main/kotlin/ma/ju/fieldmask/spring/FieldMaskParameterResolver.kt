@@ -1,7 +1,7 @@
-package ma.ju.fieldmask.core.boot
+package ma.ju.fieldmask.spring
 
+import ma.ju.fieldmask.core.BeanMask
 import ma.ju.fieldmask.core.FieldMask
-import ma.ju.fieldmask.core.PathList
 import org.springframework.core.MethodParameter
 import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
@@ -26,10 +26,10 @@ class FieldMaskParameterResolver(
         val request = webRequest.nativeRequest as HttpServletRequest
         val annotation = parameter.getParameterAnnotation(FieldMaskParameter::class.java)!!
         val fields = request.getParameterValues(annotation.name)?.toList()?.joinToString(",") ?: annotation.defaultValue
-        val mask: PathList = PathList.matcherFor(fields, properties.separator)
-        if (parameter.parameterType.isAssignableFrom(PathList::class.java)) {
+        val mask: FieldMask = FieldMask.matcherFor(fields, properties.separator)
+        if (parameter.parameterType.isAssignableFrom(FieldMask::class.java)) {
             return mask
-        } else if (parameter.parameterType.isAssignableFrom(FieldMask.Context::class.java)) {
+        } else if (parameter.parameterType.isAssignableFrom(BeanMask.Context::class.java)) {
             return contextBuilder.build(mask, properties)
         }
         throw IllegalArgumentException("invalid return type for FieldParameter. Expected (PathList / FieldMask.Context) got ${parameter.parameterType.simpleName}")

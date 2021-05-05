@@ -1,5 +1,7 @@
 ## Documentation
 
+[![Maven Central](https://img.shields.io/maven-central/v/ma.ju.fieldmask/fieldmask-starter.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22ma.ju.fieldmask%22%20AND%20a:%22fieldmask-starter%22)
+
 ## Requirements and Downloads
 
 Requirements:
@@ -20,7 +22,7 @@ dependencies {
   // If using Spring Boot
   implementation 'ma.ju.fieldmask:fieldmask-starter:1.0.0'
   // If using Spring MVC
-  implementation 'ma.ju.fieldmask:fieldmask-boot-autoconfigure:1.0.0'
+  implementation 'ma.ju.fieldmask:fieldmask-spring:1.0.0'
 }
 ```
 
@@ -99,6 +101,6 @@ performance over the wire.
 Catnap libraries are available from JCenter.
 
 * [fieldmask-core](fieldmask-core) - Use this library if you are only interested in the fieldmask masking functionality
-* [fieldmask-boot-autoconfigure](fieldmask-boot-autoconfigure) - Configuration for use with spring MVC
+* [fieldmask-spring](fieldmask-spring) - Configuration for use with spring MVC
 * [fieldmask-starter](fieldmask-starter) - Use this library if you are integrating fieldmask with spring boot
 

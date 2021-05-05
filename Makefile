@@ -1,7 +1,7 @@
 .PHONY: debug
 
 debug:
-	TEST_STDOUT=true ./gradlew clean ktlintFormat test
+	TEST_STDOUT=true ./gradlew clean ktlintFormat test --fail-fast
 
 release:
 	./gradlew clean assemble publish

@@ -1,4 +1,4 @@
-package ma.ju.fieldmask.core.boot
+package ma.ju.fieldmask.spring
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper

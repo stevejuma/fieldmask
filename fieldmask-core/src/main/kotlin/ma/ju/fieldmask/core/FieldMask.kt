@@ -1,12 +1,12 @@
 package ma.ju.fieldmask.core
 
 /**
- * PathList holds a collection of [Path].
+ * FieldMask holds a collection of [Path].
  *
  * @param fields The list of paths to add to this object
  * @param separator The separator to use for the path segments
  */
-open class PathList(fields: List<Path> = listOf(), private val separator: String = "/") {
+open class FieldMask(fields: List<Path> = listOf(), private val separator: String = "/") {
     private val paths = mutableMapOf<String, Path>()
 
     init {
@@ -106,28 +106,28 @@ open class PathList(fields: List<Path> = listOf(), private val separator: String
 
     /**
      * Removes the [prefix] from the paths defined in this collections
-     * @return New [PathList] with paths that only contain the [prefix] with
+     * @return New [FieldMask] with paths that only contain the [prefix] with
      * the prefix removed
      */
-    fun trimPrefix(prefix: Path): PathList {
+    fun trimPrefix(prefix: Path): FieldMask {
         val fields = paths.values.filter { it.startsWith(prefix.paths) }.map { it.trimPrefix(prefix.paths) }
-        return PathList(fields, separator)
+        return FieldMask(fields, separator)
     }
 
     /**
      * Fetches only the paths that match the specified prefix
      * @param prefix The prefix to check for patches
      * @param trim Boolean indicating whether the prefix matched should be trimmed
-     * @return New [PathList] with the matching prefixes
+     * @return New [FieldMask] with the matching prefixes
      */
-    fun withPrefix(prefix: Path, trim: Boolean = false): PathList {
+    fun withPrefix(prefix: Path, trim: Boolean = false): FieldMask {
         if (prefix.paths.isEmpty()) {
             return copy()
         }
         val fields = paths.values.filter { it.startsWith(prefix.paths) }.map {
             if (trim) it.trimPrefix(prefix.paths) else it
         }
-        return PathList(fields, separator)
+        return FieldMask(fields, separator)
     }
 
     /**
@@ -138,19 +138,19 @@ open class PathList(fields: List<Path> = listOf(), private val separator: String
     /**
      * Creates a copy of this collection with the specified properties
      */
-    fun copy() = PathList(paths.values.toMutableList(), separator)
+    fun copy() = FieldMask(paths.values.toMutableList(), separator)
 
     override fun toString(): String = "separator: $separator paths: ${paths.values}"
 
     companion object {
         /**
-         * Creates a [PathList] for the specified [query] with the given [separator]
-         * @return The [PathList] for the specified query
+         * Creates a [FieldMask] for the specified [query] with the given [separator]
+         * @return The [FieldMask] for the specified query
          */
-        fun matcherFor(query: String, separator: String = "/"): PathList {
-            if (query.isBlank()) return PathList()
+        fun matcherFor(query: String, separator: String = "/"): FieldMask {
+            if (query.isBlank()) return FieldMask()
             val parser = FieldQueryParser()
-            return PathList(parser.parse(query), separator)
+            return FieldMask(parser.parse(query), separator)
         }
     }
 }

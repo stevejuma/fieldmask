@@ -202,10 +202,10 @@ data class MaskOptions(
 }
 
 /**
- * FieldMask is responsible for masking and unmasking objects
+ * BeanMask is responsible for masking and unmasking objects
  */
 @Suppress("UNCHECKED_CAST")
-object FieldMask {
+object BeanMask {
 
     /**
      * The Context used when parsing the field masks
@@ -217,7 +217,7 @@ object FieldMask {
      * @property properties A map with generic properties that Loaders can use to store state
      */
     data class Context(
-        val mask: PathList,
+        val mask: FieldMask,
         val root: Path = Path(),
         val options: MaskOptions = MaskOptions(),
         val futures: MutableList<CompletableFuture<*>> = mutableListOf(),
@@ -246,7 +246,7 @@ object FieldMask {
      * @param options The options to use to apply the properties
      */
     fun <T : Any> apply(source: T, target: T, query: String, options: MaskOptions = MaskOptions()) {
-        apply(source, target, Context(PathList.matcherFor(query), Path(), options))
+        apply(source, target, Context(FieldMask.matcherFor(query), Path(), options))
     }
 
     /**
@@ -377,7 +377,7 @@ object FieldMask {
      */
     fun mask(instance: Any?, query: String, options: MaskOptions = MaskOptions()): FieldModel<*> {
         return mask(
-            instance, Context(PathList.matcherFor(query), Path(), options)
+            instance, Context(FieldMask.matcherFor(query), Path(), options)
         )
     }
 
@@ -470,7 +470,7 @@ object FieldMask {
                 }
             }
             paths.addAll(resolverMethods.keys.map { Path(it.name) })
-            var beanPaths = PathList(paths)
+            var beanPaths = FieldMask(paths)
             val invalid =
                 context.mask.withPrefix(context.root, true).values().filter { beanPaths.matches(it).paths.isEmpty() }
             if (paths.isNotEmpty() && invalid.isNotEmpty()) {

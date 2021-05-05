@@ -1,4 +1,4 @@
-package ma.ju.fieldmask.core.boot.app
+package ma.ju.fieldmask.spring.app
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.springframework.stereotype.Service

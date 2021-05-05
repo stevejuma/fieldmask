@@ -1,4 +1,4 @@
-package ma.ju.fieldmask.core.boot
+package ma.ju.fieldmask.spring
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.ComponentScan
  */
 @SpringBootApplication
 @EnableFieldMask
-@ComponentScan("ma.ju.fieldmask.core.boot.app")
+@ComponentScan("ma.ju.fieldmask.spring.app")
 open class Application
 
 /**

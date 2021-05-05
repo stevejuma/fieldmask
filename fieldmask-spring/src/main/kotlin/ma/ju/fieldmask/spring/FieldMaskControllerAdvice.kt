@@ -1,7 +1,7 @@
-package ma.ju.fieldmask.core.boot
+package ma.ju.fieldmask.spring
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import ma.ju.fieldmask.core.FieldMask
+import ma.ju.fieldmask.core.BeanMask
 import ma.ju.fieldmask.core.ParseException
 import ma.ju.fieldmask.core.UnknownFieldMaskException
 import org.slf4j.LoggerFactory
@@ -94,7 +94,7 @@ class FieldMaskControllerAdvice(
         logger.debug("Context: $context")
         if (context.mask.empty()) return body
 
-        val model = FieldMask.mask(body, context).model()
+        val model = BeanMask.mask(body, context).model()
         logger.debug("Body: $model")
         return model
     }

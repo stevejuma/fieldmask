@@ -1,9 +1,9 @@
 package ma.ju.controllers
 
+import ma.ju.fieldmask.core.BeanMask
 import ma.ju.fieldmask.core.FieldMask
-import ma.ju.fieldmask.core.PathList
-import ma.ju.fieldmask.core.boot.FieldMaskParameter
-import ma.ju.fieldmask.core.boot.FieldMaskResponseBody
+import ma.ju.fieldmask.spring.FieldMaskParameter
+import ma.ju.fieldmask.spring.FieldMaskResponseBody
 import ma.ju.repository.Repository
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestMapping
@@ -22,9 +22,9 @@ class SearchController(private val repository: Repository) {
     @FieldMaskResponseBody(false)
     fun customParameter(
         @FieldMaskParameter("paths")
-        paths: PathList,
+        paths: FieldMask,
         @FieldMaskParameter("mask")
-        context: FieldMask.Context
+        context: BeanMask.Context
     ): Any {
         return mapOf(
             "PathList" to paths.toString(),

@@ -1,6 +1,6 @@
 package ma.ju
 
-import ma.ju.fieldmask.core.boot.EnableFieldMask
+import ma.ju.fieldmask.spring.EnableFieldMask
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan

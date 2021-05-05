@@ -1,4 +1,4 @@
-package ma.ju.fieldmask.core.boot
+package ma.ju.fieldmask.spring
 
 import ma.ju.fieldmask.core.PathOptions
 import org.springframework.boot.context.properties.ConfigurationProperties

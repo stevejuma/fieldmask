@@ -1,5 +1,7 @@
 # Field Mask Core
 
+[![Maven Central](https://img.shields.io/maven-central/v/ma.ju.fieldmask/fieldmask-core.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22ma.ju.fieldmask%22%20AND%20a:%22fieldmask-core%22)
+
 This is the core library that handles the field parsing and masking. You
 can use this library standalone.
 

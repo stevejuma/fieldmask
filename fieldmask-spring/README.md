@@ -1,5 +1,8 @@
 # Field Mask Spring
 
+[![Maven Central](https://img.shields.io/maven-central/v/ma.ju.fieldmask/fieldmask-spring.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22ma.ju.fieldmask%22%20AND%20a:%22fieldmask-spring%22)
+
+
 Adds Field Masking to your API's in Spring Web / Spring MVC
 
 ## Requirements and Downloads
@@ -20,7 +23,7 @@ repositories {
 
 dependencies {
   // If using the core library only
-  implementation 'ma.ju.fieldmask:fieldmask-boot-autoconfigure:1.0.0'
+  implementation 'ma.ju.fieldmask:fieldmask-spring:1.0.0'
 }
 ```
 
@@ -29,7 +32,7 @@ Maven:
 ```xml
 <dependency>
   <groupId>ma.ju.fieldmask</groupId>
-  <artifactId>fieldmask-boot-autoconfigure</artifactId>
+  <artifactId>fieldmask-spring</artifactId>
   <version>1.0.0</version>
 </dependency>
 ```

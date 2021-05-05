@@ -1,4 +1,4 @@
-package ma.ju.fieldmask.core.boot
+package ma.ju.fieldmask.spring
 
 import org.springframework.context.annotation.Import
 

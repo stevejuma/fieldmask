@@ -1,9 +1,9 @@
-package ma.ju.fieldmask.core.boot.app
+package ma.ju.fieldmask.spring.app
 
+import ma.ju.fieldmask.core.BeanMask
 import ma.ju.fieldmask.core.FieldMask
-import ma.ju.fieldmask.core.PathList
-import ma.ju.fieldmask.core.boot.FieldMaskParameter
-import ma.ju.fieldmask.core.boot.FieldMaskResponseBody
+import ma.ju.fieldmask.spring.FieldMaskParameter
+import ma.ju.fieldmask.spring.FieldMaskResponseBody
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
@@ -26,9 +26,9 @@ class TestController(private val repository: MusicRepository) {
     @FieldMaskResponseBody(true)
     fun customParameter(
         @FieldMaskParameter("paths")
-        paths: PathList,
+        paths: FieldMask,
         @FieldMaskParameter("mask")
-        context: FieldMask.Context
+        context: BeanMask.Context
     ): List<*> {
         val data = paths.values().toMutableList()
         data.addAll(context.mask.values())

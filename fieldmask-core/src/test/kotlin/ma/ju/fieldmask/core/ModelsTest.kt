@@ -102,14 +102,14 @@ class ModelsTest {
         mapOf(
             "name,albums/songs(artist/name,title)" to """[{"albums":[{"songs":[{"artist":{"name":"Taylor Swift"},"title":"Fifteen"},{"artist":{"name":"Taylor Swift"},"title":"Love Story"},{"artist":{"name":"Taylor Swift"},"title":"White Horse"}]}],"name":"Taylor Swift"},{"albums":[{"songs":[{"artist":{"name":"Avril Lavigne"},"title":"Complicated"},{"artist":{"name":"Avril Lavigne"},"title":"Sk8er Boi"},{"artist":{"name":"Avril Lavigne"},"title":"I'm With You"}]}],"name":"Avril Lavigne"}]""",
         ).forEach { (q, v) ->
-            val data = FieldMask.mask(listOf(artistI, artistII), q).model()
+            val data = BeanMask.mask(listOf(artistI, artistII), q).model()
             assertEquals(v, mapper.writeValueAsString(data), q)
         }
 
         mapOf(
             "name,props(nemesis(name),friends)" to "{name=Peter Pan, props={friends=[Tinker Bell, Captain Hook], nemesis=[{name=Captain Hook}]}}",
         ).forEach { (q, v) ->
-            assertEquals(v, FieldMask.mask(peter, q).model().toString(), q)
+            assertEquals(v, BeanMask.mask(peter, q).model().toString(), q)
         }
     }
 
@@ -120,12 +120,12 @@ class ModelsTest {
         ).forEach { (q, v) ->
             assertEquals(
                 v,
-                FieldMask.mask(peter, q, MaskOptions(pathOptions = PathOptions(includePrivate = true))).model()
+                BeanMask.mask(peter, q, MaskOptions(pathOptions = PathOptions(includePrivate = true))).model()
                     .toString(),
                 q
             )
             assertThrows<UnknownFieldMaskException> {
-                FieldMask.mask(peter, q, MaskOptions(pathOptions = PathOptions(includePrivate = false)))
+                BeanMask.mask(peter, q, MaskOptions(pathOptions = PathOptions(includePrivate = false)))
             }
         }
     }
@@ -133,14 +133,14 @@ class ModelsTest {
     @Test
     fun `throws exception on unknown field mask`() {
         assertThrows<UnknownFieldMaskException> {
-            FieldMask.mask(peter, "unknown")
+            BeanMask.mask(peter, "unknown")
         }
     }
 
     @Test
     fun `ignores exception on unknown field mask when option set`() {
         assertDoesNotThrow {
-            FieldMask.mask(peter, "unknown", MaskOptions(validateMasks = false))
+            BeanMask.mask(peter, "unknown", MaskOptions(validateMasks = false))
         }
     }
 
@@ -156,7 +156,7 @@ class ModelsTest {
     fun `uses value from resolver`() {
         assertEquals(
             "{name=Mr. Peter Pan: 16}",
-            FieldMask.mask(
+            BeanMask.mask(
                 peter, "name",
                 MaskOptions(
                     validateMasks = false,
@@ -175,7 +175,7 @@ class ModelsTest {
         )
         assertEquals(
             "{occupation=Hello}",
-            FieldMask.mask(
+            BeanMask.mask(
                 data, "occupation",
                 MaskOptions(validateMasks = false) { futures ->
                     futures.forEach {
@@ -190,22 +190,22 @@ class ModelsTest {
     @Test
     fun `applies field mask to pojo`() {
         withArtists { a, b ->
-            FieldMask.apply(a, b, "albums")
+            BeanMask.apply(a, b, "albums")
             assertEquals("[Album<Album A1> | Songs[[Song<Song A1-S1>, Song<Song A1-S2>]]]", b.albums.toString())
         }
 
         withArtists { a, b ->
-            FieldMask.apply(b, a, "albums/songs")
+            BeanMask.apply(b, a, "albums/songs")
             assertEquals("[Album<Album A1> | Songs[[Song<Song A2-S1>, Song<Song A1-S2>]]]", a.albums.toString())
         }
 
         withArtists { a, b ->
-            FieldMask.apply(a, b, "*")
+            BeanMask.apply(a, b, "*")
             assertEquals(a.toString(), b.toString())
         }
 
         withArtists { a, b ->
-            FieldMask.apply(b, a, "*")
+            BeanMask.apply(b, a, "*")
             assertEquals(
                 "Artist<Artist II> | Albums[[Album<Album A2> | Songs[[Song<Song A2-S1>, Song<Song A1-S2>]]]]",
                 a.toString()
