@@ -186,3 +186,22 @@ nexusStaging {
     password = System.env.OSS_USER_TOKEN_PASS ?: project.findProperty('ossrh.password') ?: ''
     packageGroup =  "$PROJECT_GROUP"
 }
+
+task upateVersion {
+    doLast {
+        def from = project.hasProperty('version')? project.property('version') : '1.0.0'
+        if(!project.hasProperty('newVersion')) {
+            throw new GradleException('No version specified. \n\n\t **** Please run the task with ./gradlew -PnewVersion=<version> upateVersion ****')
+        }
+
+        def to = project.property('newVersion')
+        logger.info "Bumping App Version from $from ==> $to"
+
+        ant.replace(
+                dir: project.projectDir,
+                token: from,
+                value: to,
+                includes: 'gradle.properties,**/*.md'
+        )
+    }
+}
