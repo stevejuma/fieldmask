@@ -9,7 +9,7 @@ Requirements:
 
 * Java >= 1.8
 
-## Usage
+## Install
 
 Gradle:
 
@@ -34,3 +34,59 @@ Maven:
 </dependency>
 ```
 
+## Usage
+
+Parsing a string for Paths and checking if a given path matches the
+PathList
+
+```kotlin
+    /* To parse a field query into a path collection */
+    val parser = FieldQueryParser()
+    val paths  = parser.parse(query)
+    
+    /* Checking for matches for the given mask */
+    val matcher = PathList.matcherFor("name,songs(title,albumId),albums/*")
+    /* Matches all of these paths */
+    matcher.matches("name")
+    matcher.matches("songs/title")
+    matcher.matches("songs/albumId")
+    matcher.matches("albums/name")
+    matcher.matches("albums/artist/name")
+    
+    /* Doesn't match any of these */
+    matcher.matches("address/postCode")
+    matcher.matches("unknown")
+```
+
+Creating a mask for the specified object
+
+```kotlin
+    val entity = Artist(id = 1001, name = "Avril Lavigne", songs = mutableListOf(
+        Song(id = 2001, title = "Complicate", track = 3)
+    ), albums = mutableListOf(
+        Album(id = 3001, title = "Let Go", songCount = 12, year = 2002)
+    ))
+    val model = BeanMask.mask(entity, "name,songs(title)")
+    /**
+    * Returns: 
+    * Map<String, *>{
+    *   "name": "Avril Lavigne",
+    *   "songs" [
+    *     {"title": "Complicated",
+    *   ]
+    * }
+    */
+```
+
+Copying data from one entity to another with a field mask
+
+```kotlin
+    val modelI = Artist(id = 1001, name = "Avril Lavigne")
+    val modelII = Artist(id = 1002, name = "Taylor Swift")
+    BeanMask.apply(modelI, modelII, "name")
+    /**
+    * Returns ModelII {
+    *   name = "Avril Lavigne"
+    * }
+    */
+```

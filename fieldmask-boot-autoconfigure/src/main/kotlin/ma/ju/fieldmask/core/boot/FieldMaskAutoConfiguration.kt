@@ -7,7 +7,6 @@ import ma.ju.fieldmask.core.ParseException
 import ma.ju.fieldmask.core.UnknownFieldMaskException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -18,7 +17,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import javax.servlet.http.HttpServletResponse
 
 @Configuration
-@ConditionalOnProperty(value = ["fieldmask.enabled"], havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(FieldMaskProperties::class)
 open class FieldMaskAutoConfiguration : WebMvcConfigurer {
     @Autowired
@@ -39,6 +37,5 @@ open class FieldMaskAutoConfiguration : WebMvcConfigurer {
 }
 
 inline fun <reified T> FieldModel<*>.value(mapper: ObjectMapper = ObjectMapper()): T {
-    val json = mapper.writeValueAsString(model())
-    return mapper.readValue(json, object : TypeReference<T>() {})
+    return mapper.convertValue(model(), object : TypeReference<T>() {})
 }

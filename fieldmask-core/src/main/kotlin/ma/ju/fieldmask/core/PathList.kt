@@ -143,6 +143,10 @@ open class PathList(fields: List<Path> = listOf(), private val separator: String
     override fun toString(): String = "separator: $separator paths: ${paths.values}"
 
     companion object {
+        /**
+         * Creates a [PathList] for the specified [query] with the given [separator]
+         * @return The [PathList] for the specified query
+         */
         fun matcherFor(query: String, separator: String = "/"): PathList {
             if (query.isBlank()) return PathList()
             val parser = FieldQueryParser()

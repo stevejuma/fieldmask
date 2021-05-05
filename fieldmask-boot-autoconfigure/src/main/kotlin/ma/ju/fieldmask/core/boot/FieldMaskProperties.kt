@@ -24,7 +24,7 @@ open class FieldMaskProperties {
     var validate: Boolean = true
 
     /**
-     * The bean path fetch optionss
+     * The bean path fetch options
      */
     var path: PathOptions = PathOptions()
 
