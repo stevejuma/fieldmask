@@ -92,7 +92,7 @@ class ContextBuilder(
             options = ctx.options.copy(
                 resolvers = resolvers,
                 futureHandler = { futures ->
-                    registry.dispatchAll()
+                    registry.dataLoaders.map { it.dispatchAndJoin() }
                     futures.map { it.get() }
                 }
             ),

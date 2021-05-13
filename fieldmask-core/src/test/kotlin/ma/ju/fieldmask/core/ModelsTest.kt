@@ -43,7 +43,8 @@ data class Album(
     @JsonBackReference
     var artist: Artist? = null,
     @JsonManagedReference
-    var songs: MutableList<Song> = mutableListOf()
+    var songs: MutableList<Song> = mutableListOf(),
+    var released: Boolean = false
 ) {
     override fun toString(): String = "Album<$title> | Songs[$songs]"
     override fun hashCode() = id.hashCode()
@@ -111,6 +112,7 @@ class ModelsTest {
     fun `returns partial responses`() {
         val mapper = ObjectMapper()
         mapOf(
+            "albums(released)" to """[{"albums":[{"released":false}]},{"albums":[{"released":false}]}]""",
             "name,albums/songs" to """[{"albums":[{"songs":[{"id":1,"title":"Fifteen"},{"id":2,"title":"Love Story"},{"id":3,"title":"White Horse"}]}],"name":"Taylor Swift"},{"albums":[{"songs":[{"id":4,"title":"Complicated"},{"id":5,"title":"Sk8er Boi"},{"id":6,"title":"I'm With You"}]}],"name":"Avril Lavigne"}]""",
             "name,albums/songs(artist/name,title)" to """[{"albums":[{"songs":[{"artist":{"name":"Taylor Swift"},"title":"Fifteen"},{"artist":{"name":"Taylor Swift"},"title":"Love Story"},{"artist":{"name":"Taylor Swift"},"title":"White Horse"}]}],"name":"Taylor Swift"},{"albums":[{"songs":[{"artist":{"name":"Avril Lavigne"},"title":"Complicated"},{"artist":{"name":"Avril Lavigne"},"title":"Sk8er Boi"},{"artist":{"name":"Avril Lavigne"},"title":"I'm With You"}]}],"name":"Avril Lavigne"}]""",
         ).forEach { (q, v) ->

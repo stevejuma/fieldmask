@@ -30,12 +30,17 @@ fun isFieldAccessible(property: KProperty1<*, *>): Boolean {
  */
 fun isPrimitive(any: Any): Boolean {
     val clazz = if (any is Class<*>) any else any.javaClass
-    return (
-        clazz.isPrimitive || clazz.isEnum || Number::class.java.isAssignableFrom(clazz) ||
-            String::class.java.isAssignableFrom(clazz) || Boolean::class.java.isAssignableFrom(clazz) ||
-            Char::class.java.isAssignableFrom(clazz) || Date::class.java.isAssignableFrom(clazz)
-        ) ||
-        Instant::class.java.isAssignableFrom(clazz)
+    val primitives = setOf(
+        String::class.java, Number::class.java, java.lang.Boolean::class.java, Char::class.java,
+        Date::class.java, Double::class.java, Long::class.java, Integer::class.java, Byte::class.java, Character::class.java,
+        Short::class.java, Integer::class.java, Float::class.java, Void::class.java, Instant::class.java,
+        java.lang.Boolean.TYPE, java.lang.Byte.TYPE, Character.TYPE, java.lang.Short.TYPE,
+        Integer.TYPE, java.lang.Long.TYPE, java.lang.Double.TYPE, java.lang.Float.TYPE, Void.TYPE
+    )
+    return clazz.isPrimitive ||
+        clazz.isEnum ||
+        primitives.any { it == clazz } ||
+        primitives.any { it.isAssignableFrom(clazz) }
 }
 
 /**
