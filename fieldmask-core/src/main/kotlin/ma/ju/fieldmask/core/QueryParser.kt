@@ -141,6 +141,8 @@ class Path(val paths: MutableList<Segment> = mutableListOf(), val separator: Str
         return this
     }
 
+    fun startsWith(vararg segments: Segment) = startsWith(segments.toList())
+
     /**
      * Checks if this path starts with the specified [segments]
      * @return boolean indicating if the path starts with the segment

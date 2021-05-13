@@ -1,5 +1,7 @@
 package ma.ju.fieldmask.core
 
+import com.fasterxml.jackson.annotation.JsonBackReference
+import com.fasterxml.jackson.annotation.JsonManagedReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertIterableEquals
@@ -26,7 +28,9 @@ class TestClassResolver : FieldResolver<TestClass> {
 data class Song(
     var id: Long,
     var title: String,
+    @JsonBackReference
     var artist: Artist? = null,
+    @JsonBackReference
     var album: Album? = null
 ) {
     override fun toString(): String = "Song<$title>"
@@ -36,14 +40,21 @@ data class Song(
 data class Album(
     var id: Long,
     var title: String,
+    @JsonBackReference
     var artist: Artist? = null,
+    @JsonManagedReference
     var songs: MutableList<Song> = mutableListOf()
 ) {
     override fun toString(): String = "Album<$title> | Songs[$songs]"
     override fun hashCode() = id.hashCode()
 }
 
-data class Artist(var id: Long, var name: String, var albums: MutableList<Album> = mutableListOf()) {
+data class Artist(
+    var id: Long,
+    var name: String,
+    @JsonManagedReference
+    var albums: MutableList<Album> = mutableListOf()
+) {
     override fun toString(): String = "Artist<$name> | Albums[$albums]"
     override fun hashCode() = id.hashCode()
 }
@@ -100,6 +111,7 @@ class ModelsTest {
     fun `returns partial responses`() {
         val mapper = ObjectMapper()
         mapOf(
+            "name,albums/songs" to """[{"albums":[{"songs":[{"id":1,"title":"Fifteen"},{"id":2,"title":"Love Story"},{"id":3,"title":"White Horse"}]}],"name":"Taylor Swift"},{"albums":[{"songs":[{"id":4,"title":"Complicated"},{"id":5,"title":"Sk8er Boi"},{"id":6,"title":"I'm With You"}]}],"name":"Avril Lavigne"}]""",
             "name,albums/songs(artist/name,title)" to """[{"albums":[{"songs":[{"artist":{"name":"Taylor Swift"},"title":"Fifteen"},{"artist":{"name":"Taylor Swift"},"title":"Love Story"},{"artist":{"name":"Taylor Swift"},"title":"White Horse"}]}],"name":"Taylor Swift"},{"albums":[{"songs":[{"artist":{"name":"Avril Lavigne"},"title":"Complicated"},{"artist":{"name":"Avril Lavigne"},"title":"Sk8er Boi"},{"artist":{"name":"Avril Lavigne"},"title":"I'm With You"}]}],"name":"Avril Lavigne"}]""",
         ).forEach { (q, v) ->
             val data = BeanMask.mask(listOf(artistI, artistII), q).model()

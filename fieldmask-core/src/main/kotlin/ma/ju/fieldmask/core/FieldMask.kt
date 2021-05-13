@@ -21,6 +21,9 @@ open class FieldMask(fields: List<Path> = listOf(), private val separator: Strin
         }
     }
 
+    fun contains(key: String) = paths.containsKey(key)
+
+    fun contains(path: Path) = paths.containsKey(path.toString())
     /**
      * Checks if this collection is empty
      */

@@ -5,6 +5,7 @@ import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import java.time.Instant
 import java.util.Date
+import java.util.Stack
 import java.util.concurrent.CompletableFuture
 import kotlin.reflect.KClass
 import kotlin.reflect.KMutableProperty
@@ -221,7 +222,8 @@ object BeanMask {
         val root: Path = Path(),
         val options: MaskOptions = MaskOptions(),
         val futures: MutableList<CompletableFuture<*>> = mutableListOf(),
-        val properties: MutableMap<String, Any?> = mutableMapOf()
+        val properties: MutableMap<String, Any?> = mutableMapOf(),
+        val depth: Stack<String> = Stack()
     ) {
         /**
          * Checks if the Loaded mask matches the specified [path] segment
@@ -336,8 +338,8 @@ object BeanMask {
         }
     }
 
-    private fun applyCached(source: Any, context: Context): Boolean {
-        val cacheKey = "${source.javaClass.name}:${source.hashCode()}"
+    private fun applyCached(source: Any?, context: Context): Boolean {
+        val cacheKey = "${source?.javaClass?.name}:${System.identityHashCode(source)}"
         if (context.properties.containsKey(cacheKey)) return true
         context.properties[cacheKey] = true
         return false
@@ -414,7 +416,8 @@ object BeanMask {
 
     private fun visitList(instance: Iterable<*>?, model: ListModel<*>, context: Context) {
         if (instance == null) return
-        for (child in instance) {
+        for ((i, child) in instance.withIndex()) {
+            context.depth.push(i.toString())
             if (child == null || isPrimitive(child)) {
                 model.add(child)
             } else if (child is Map<*, *>) {
@@ -422,6 +425,7 @@ object BeanMask {
             } else {
                 visitPojo(child, model.createMap(), context)
             }
+            context.depth.pop()
         }
     }
 
@@ -429,18 +433,21 @@ object BeanMask {
         if (instance == null) return
         for (entry in instance.entries) {
             val field = entry.key.toString()
+            context.depth.push(field)
             val m = context.matches(Segment(field))
             if (m.paths.isEmpty()) continue
             val value = entry.value
             if (value != null) {
                 addField(m.paths.last(), value, model, context, isPrimitive(value))
             }
+            context.depth.pop()
         }
     }
 
     @Suppress("UNCHECKED_CAST")
     private fun visitPojo(instance: Any?, model: MapModel<*>, context: Context) {
         if (instance == null) return
+        // if (maskCached(context)) return
         val klass = if (instance is Class<*>) instance else instance.javaClass
         val properties = instance::class.memberProperties.filter {
             val accessible = isFieldAccessible(it)
@@ -486,15 +493,26 @@ object BeanMask {
 
             var value: Any? = p.get(instance)
             val methodNames = setOf(p.name, "get${p.name}", "get${p.name.capitalize()}")
+            val annotations = p.javaField?.annotations?.map { it.annotationClass.simpleName }?.toSet() ?: setOf()
+            val ignore = annotations.contains("JsonBackReference") || annotations.contains("JsonIgnore")
+            var resolved = false
             resolverMethods.filter {
                 methodNames.contains(it.key.name)
             }.maxByOrNull { it.value.second.size }?.let { (method, args) ->
                 value = method.invoke(args.first, *args.second.toTypedArray())
+                resolved = true
+            }
+
+            if (ignore && !resolved && !context.mask.contains(context.root.join(Segment(p.name)))) continue
+            if (annotations.contains("JsonIgnore") && (!resolved)) {
+                continue
             }
 
             if (value != null) {
+                context.depth.push(m.paths.last().toString())
                 addField(m.paths.last(), value!!, model, context, isPrimitive(value!!))
                 props.add(m.paths.last().value)
+                context.depth.pop()
             }
         }
 
@@ -504,7 +522,9 @@ object BeanMask {
             if (props.contains(method.name) || m.paths.isEmpty()) continue
             val value = method.invoke(args.first, *args.second.toTypedArray())
             if (value != null) {
+                context.depth.push(m.paths.last().toString())
                 addField(m.paths.last(), value, model, context, isPrimitive(value))
+                context.depth.pop()
             }
         }
     }
@@ -563,6 +583,7 @@ object BeanMask {
         }
 
         val ctx = context.withRoot(Segment(field.value))
+
         when (data) {
             is Iterable<*> -> {
                 visitList(data, model.createList(field.field), ctx)
