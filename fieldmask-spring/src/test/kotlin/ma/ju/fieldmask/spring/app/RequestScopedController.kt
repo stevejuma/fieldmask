@@ -84,7 +84,7 @@ class ArtistAlbumLoader(private val repository: MusicRepository) : FieldDataLoad
     }
 }
 
-@Component
+@Component("fieldMaskContextBuilder")
 class ContextBuilder(
     properties: FieldMaskProperties
 ) : DefaultFieldMaskContextBuilder(properties) {

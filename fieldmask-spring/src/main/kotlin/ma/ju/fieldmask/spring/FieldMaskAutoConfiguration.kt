@@ -23,7 +23,7 @@ open class FieldMaskAutoConfiguration : WebMvcConfigurer {
     private lateinit var fieldMaskProperties: FieldMaskProperties
 
     @Bean
-    @ConditionalOnMissingBean(type = ["FieldMaskContextBuilder"])
+    @ConditionalOnMissingBean(name = ["fieldMaskContextBuilder"])
     open fun fieldMaskContextBuilder() = DefaultFieldMaskContextBuilder(fieldMaskProperties)
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
