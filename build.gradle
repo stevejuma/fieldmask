@@ -29,7 +29,6 @@ buildscript {
 plugins {
     id 'java'
     id 'jacoco'
-    id 'io.github.gradle-nexus.publish-plugin' version "$PLUGIN_NEXUS_STAGING_VER"
     /* id  "org.jetbrains.dokka" version "$LIB_DOKKA_VER" */
 }
 
@@ -180,16 +179,6 @@ subprojects {
                     }
                 }
             }
-        }
-    }
-}
-
-nexusPublishing {
-    packageGroup = "$PROJECT_GROUP"
-    repositories {
-        sonatype {
-            username = System.env.OSS_USER_TOKEN_KEY ?: project.findProperty('ossrh.username') ?: ''
-            password = System.env.OSS_USER_TOKEN_PASS ?: project.findProperty('ossrh.password') ?: ''
         }
     }
 }
