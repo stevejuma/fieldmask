@@ -186,6 +186,9 @@ subprojects {
 task updateVersion {
     doLast {
         def from = project.hasProperty('version')? project.property('version') : '1.0.0'
+        if(project.hasProperty('oldVersion')){
+            from = project.property('oldVersion')
+        }
         from = from.replace('-SNAPSHOT', "")
         if(!project.hasProperty('newVersion')) {
             throw new GradleException('No version specified. \n\n\t **** Please run the task with ./gradlew -PnewVersion=<version> updateVersion ****')

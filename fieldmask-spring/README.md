@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
   // If using the core library only
-  implementation 'ma.ju.fieldmask:fieldmask-spring:1.0.2'
+  implementation 'ma.ju.fieldmask:fieldmask-spring:1.0.3'
 }
 ```
 
@@ -33,7 +33,7 @@ Maven:
 <dependency>
   <groupId>ma.ju.fieldmask</groupId>
   <artifactId>fieldmask-spring</artifactId>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
 </dependency>
 ```
 
