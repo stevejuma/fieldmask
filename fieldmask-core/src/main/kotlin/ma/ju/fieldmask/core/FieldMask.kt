@@ -66,7 +66,7 @@ open class FieldMask(fields: List<Path> = listOf(), private val separator: Strin
             val key = keys.joinToString(separator)
             if (keys.isNotEmpty() && key.isNotBlank()) {
                 var values =
-                    paths.filter { k -> k.key.startsWith(key) && k.value.size > keys.size }.values.map { it.paths }
+                    paths.filter { k -> k.value.startsWith(keys) && k.value.size > keys.size }.values.map { it.paths }
                 if (matches.isEmpty() && values.isNotEmpty()) matches = values
                 matches = matches.filter { m -> m.size >= keys.size }
 
@@ -81,7 +81,8 @@ open class FieldMask(fields: List<Path> = listOf(), private val separator: Strin
                                 continue
                             }
                             if (m[idx].value == "*" || keys[idx].value == "*") {
-                                sb.add(m[idx])
+                                val field = if (m[idx].value == "*") keys[idx] else m[idx]
+                                sb.add(Segment("*", field.value))
                                 continue
                             }
                             valid = false
@@ -89,10 +90,11 @@ open class FieldMask(fields: List<Path> = listOf(), private val separator: Strin
                         }
                         valid
                     }
-
                     if (!matched) {
-                        val m = matchedKey.paths.joinToString(separator)
-                        if (m.isNotBlank() && !paths.keys.any { it.startsWith("$m$separator") }) {
+                        paths.values.firstOrNull { it.startsWith(matchedKey.paths) && it.size >= parts.size }?.let {
+                            return Path()
+                        }
+                        if (paths.values.any { it.startsWith(matchedKey.paths) }) {
                             return Path(parts.toMutableList())
                         }
                         return Path()

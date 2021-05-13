@@ -28,7 +28,8 @@ fun isFieldAccessible(property: KProperty1<*, *>): Boolean {
  * Checks if the specified [any] object is a primitive value
  * @return boolean indicating if the object is a primitive
  */
-fun isPrimitive(any: Any): Boolean {
+fun isPrimitive(any: Any?): Boolean {
+    any ?: return true
     val clazz = if (any is Class<*>) any else any.javaClass
     val primitives = setOf(
         String::class.java, Number::class.java, java.lang.Boolean::class.java, Char::class.java,
@@ -452,7 +453,6 @@ object BeanMask {
     @Suppress("UNCHECKED_CAST")
     private fun visitPojo(instance: Any?, model: MapModel<*>, context: Context) {
         if (instance == null) return
-        // if (maskCached(context)) return
         val klass = if (instance is Class<*>) instance else instance.javaClass
         val properties = instance::class.memberProperties.filter {
             val accessible = isFieldAccessible(it)
@@ -495,7 +495,6 @@ object BeanMask {
             val p = property as KProperty1<Any?, *>
             val m = context.matches(Segment(p.name))
             if (m.paths.isEmpty()) continue
-
             var value: Any? = p.get(instance)
             val methodNames = setOf(p.name, "get${p.name}", "get${p.name.capitalize()}")
             val annotations = p.javaField?.annotations?.map { it.annotationClass.simpleName }?.toSet() ?: setOf()
@@ -507,6 +506,10 @@ object BeanMask {
                 value = method.invoke(args.first, *args.second.toTypedArray())
                 resolved = true
             }
+            val nested = context.mask.values().any { it.startsWith(m.paths) && it.size > m.size }
+            if (m.paths.last().value == "*" && nested && isPrimitive(value)) {
+                continue
+            }
 
             if (ignore && !resolved && !context.mask.contains(context.root.join(Segment(p.name)))) continue
             if (annotations.contains("JsonIgnore") && (!resolved)) {
@@ -515,7 +518,8 @@ object BeanMask {
 
             if (value != null) {
                 context.depth.push(m.paths.last().toString())
-                addField(m.paths.last(), value!!, model, context, isPrimitive(value!!))
+                val field = m.paths.last()
+                addField(field, value!!, model, context, isPrimitive(value!!))
                 props.add(m.paths.last().value)
                 context.depth.pop()
             }

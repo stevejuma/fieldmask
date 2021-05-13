@@ -149,7 +149,12 @@ class Path(val paths: MutableList<Segment> = mutableListOf(), val separator: Str
      */
     fun startsWith(segments: List<Segment>): Boolean {
         if (segments.isNotEmpty() && paths.size >= segments.size) {
-            return paths.subList(0, segments.size) == segments
+            for (i in segments.indices) {
+                if (segments[i] == paths[i]) continue
+                if (segments[i].value == "*" || paths[i].value == "*") continue
+                return false
+            }
+            return true
         }
         return false
     }
