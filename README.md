@@ -154,7 +154,8 @@ The following example shows the use of the fields parameter with a generic (fict
 
 **Request for a partial response**: The following request for this same resource uses the fields parameter to significantly reduce the amount of data returned.
 
-```http://localhost:8080/demo/v1?fields=kind,items(title,characteristics/length)
+```
+http://localhost:8080/demo/v1?fields=kind,items(title,characteristics/length)
 ```
 
 ```
