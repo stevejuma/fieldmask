@@ -22,13 +22,16 @@ bumpVersion() {
   if [[ ${APP_VERSION} =~ ${SEMANTIC_REGEX} ]]; then
     if [[ ${BASH_REMATCH[4]} ]]; then
       nextVersion=$((BASH_REMATCH[4] + 1))
+      newVersion="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${nextVersion}"
       nextVersion="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${nextVersion}-SNAPSHOT"
     else
       nextVersion=$((BASH_REMATCH[2] + 1))
+      newVersion="${BASH_REMATCH[1]}.${nextVersion}"
       nextVersion="${BASH_REMATCH[1]}.${nextVersion}-SNAPSHOT"
     fi
 
     echo "Next version: ${nextVersion}"
+    ./gradlew -PnewVersion=$newVersion updateVersion
     sed -i -E "s/^version(\s)?=.*/version=${nextVersion}/" gradle.properties
   else
     echo "No semantic version and therefore cannot publish to maven repository: '${APP_VERSION}'"
@@ -45,7 +48,8 @@ git config --global user.name "GitHub Actions"
 echo "Deploying release to Maven Central"
 removeSnapshots
 
-./gradlew clean build publish -x test
+./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+
 
 commitRelease
 bumpVersion

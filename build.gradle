@@ -29,6 +29,7 @@ buildscript {
 plugins {
     id 'java'
     id 'jacoco'
+    id "io.github.gradle-nexus.publish-plugin" version "${PLUGIN_NEXUS_STAGING_VER}"
     /* id  "org.jetbrains.dokka" version "$LIB_DOKKA_VER" */
 }
 
@@ -37,6 +38,8 @@ repositories {
 }
 
 apply plugin: "org.jlleitschuh.gradle.ktlint-idea"
+group "$PROJECT_GROUP"
+
 
 subprojects {
     apply plugin: 'kotlin'
@@ -179,6 +182,19 @@ subprojects {
                     }
                 }
             }
+        }
+    }
+}
+
+nexusPublishing {
+    packageGroup = "$PROJECT_GROUP"
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+            stagingProfileId = System.env.STAGING_PROFILE_ID ?: project.findProperty('ossrh.staging.profile-id') ?: ''
+            username = System.env.OSS_USER_TOKEN_KEY ?: project.findProperty('ossrh.username') ?: ''
+            password = System.env.OSS_USER_TOKEN_PASS ?: project.findProperty('ossrh.password') ?: ''
         }
     }
 }
