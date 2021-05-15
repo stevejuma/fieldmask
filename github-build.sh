@@ -33,6 +33,7 @@ bumpVersion() {
     echo "Next version: ${nextVersion}"
     ./gradlew -PnewVersion=$newVersion updateVersion
     sed -i -E "s/^version(\s)?=.*/version=${nextVersion}/" gradle.properties
+    sed -i -E "s/^previousVersion(\s)?=.*/previousVersion=${newVersion}/" gradle.properties
   else
     echo "No semantic version and therefore cannot publish to maven repository: '${APP_VERSION}'"
   fi
@@ -48,8 +49,7 @@ git config --global user.name "GitHub Actions"
 echo "Deploying release to Maven Central"
 removeSnapshots
 
-./gradlew --info clean build -x test publishToSonatype closeAndReleaseSonatypeStagingRepository
-
+./gradlew clean build -x test publishToSonatype closeAndReleaseSonatypeStagingRepository
 
 commitRelease
 bumpVersion

@@ -75,4 +75,5 @@ jobs:
           SIGNING_SECRET_KEY_RING_FILE: ${{ secrets.GPG_SIGNING_SECRET_KEY_RING_FILE }}
           OSS_USER_TOKEN_KEY: ${{ secrets.OSS_USER_TOKEN_KEY }}
           OSS_USER_TOKEN_PASS: ${{ secrets.OSS_USER_TOKEN_PASS }}
+          STAGING_PROFILE_ID: ${{ secrets.STAGING_PROFILE_ID }}
         run: bash github-build.sh
