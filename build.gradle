@@ -217,7 +217,7 @@ task updateVersion {
                 dir: project.projectDir,
                 token: from,
                 value: to,
-                includes: 'gradle.properties,**/*.md'
+                includes: '**/*.md'
         )
     }
 }
