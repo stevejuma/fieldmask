@@ -14,11 +14,6 @@ open class FieldMaskProperties {
     var requireAnnotation: Boolean = true
 
     /**
-     * Whether partial responses are enabled
-     */
-    var enabled: Boolean = true
-
-    /**
      * Whether to validate specified fields in the request
      */
     var validate: Boolean = true

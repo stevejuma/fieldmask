@@ -26,9 +26,30 @@ dependencies {
 }
 ```
 
+Maven:
+
+```xml
+<dependency>
+  <groupId>ma.ju.fieldmask</groupId>
+  <artifactId>fieldmask-core</artifactId>
+  <version>1.0.4</version>
+</dependency>
+
+<dependency>
+  <groupId>ma.ju.fieldmask</groupId>
+  <artifactId>fieldmask-starter</artifactId>
+  <version>1.0.4</version>
+</dependency>
+
+<dependency>
+  <groupId>ma.ju.fieldmask</groupId>
+  <artifactId>fieldmask-spring</artifactId>
+  <version>1.0.4</version>
+</dependency>
+```
 # FieldMask
 
-Fieldmask is a framework for supporting partial JSON responses in  
+Fieldmask is a framework for supporting partial JSON responses in
 RESTful web services by allowing users to supply arbitrary queries in the URL.
 
 Fieldmask supports partial responses in the following web frameworks:
