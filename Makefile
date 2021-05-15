@@ -3,8 +3,11 @@
 debug:
 	TEST_STDOUT=true ./gradlew clean ktlintFormat test --fail-fast
 
-release:
+publish:
 	./gradlew clean assemble publish
+
+release:
+	./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
 
 grammar:
 	./gradlew -p fieldmask-core clean generateGrammarSource
