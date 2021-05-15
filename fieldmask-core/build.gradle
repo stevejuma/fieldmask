@@ -1,11 +1,17 @@
 apply plugin: 'antlr'
 
+configurations {
+    compile {
+        extendsFrom = extendsFrom.findAll { it != configurations.antlr }
+    }
+}
+
 dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-reflect'
 
     /* ANTLR  */
     antlr "org.antlr:antlr4:4.8"
-    compile "org.antlr:antlr4-runtime:4.8"
+    implementation "org.antlr:antlr4-runtime:4.8"
 
     /* Making use of JUnit 5 */
     testImplementation 'org.junit.jupiter:junit-jupiter:5.6.1'
