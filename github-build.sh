@@ -48,7 +48,7 @@ git config --global user.name "GitHub Actions"
 echo "Deploying release to Maven Central"
 removeSnapshots
 
-./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+./gradlew --info clean build -x test publishToSonatype closeAndReleaseSonatypeStagingRepository
 
 
 commitRelease
