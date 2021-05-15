@@ -31,7 +31,7 @@ bumpVersion() {
     fi
 
     echo "Bumping version: ${currentVersion} -+-> ${nextVersion}"
-    ./gradlew -PnewVersion=${currentVersion} -PpreviousVersion= updateVersion
+    ./gradlew -PnewVersion=${currentVersion} updateVersion
     sed -i -E "s/^previousVersion(\s)?=.*/previousVersion=${currentVersion}/" gradle.properties
     nextVersion="${nextVersion}-SNAPSHOT"
     sed -i -E "s/^version(\s)?=.*/version=${nextVersion}/" gradle.properties
