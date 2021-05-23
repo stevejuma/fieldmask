@@ -641,7 +641,10 @@ object BeanPaths {
     }
 
     private fun visitPojo(klass: Class<*>, fields: MutableList<Path>, root: Path, context: Context) {
-        if (isPrimitive(klass)) return
+        if (isPrimitive(klass)) {
+            fields.add(root)
+            return
+        }
         val base = Path()
         val paths = mutableListOf<Path>()
         val cacheKey = Pair(context.options, klass)
