@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-  implementation 'ma.ju.fieldmask:fieldmask-starter:1.0.7'
+  implementation 'ma.ju.fieldmask:fieldmask-starter:1.0.8'
 }
 ```
 
@@ -28,6 +28,6 @@ Maven:
 <dependency>
   <groupId>ma.ju.fieldmask</groupId>
   <artifactId>fieldmask-starter</artifactId>
-  <version>1.0.7</version>
+  <version>1.0.8</version>
 </dependency>
 ```
