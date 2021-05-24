@@ -18,13 +18,13 @@ class RequestScopedControllerTest @Autowired constructor(
 ) {
     @Test
     fun `filters api response`() {
-        mockMvc.perform(get("/scoped/artists?fields=name,albums(title)"))
+        mockMvc.perform(get("/scoped/artists?fields=artists(name,albums(title))"))
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(
                 content().json(
-                    """
-                [
+                    """{
+                 "artists": [
                   {
                     "albums": [
                       {
@@ -42,20 +42,20 @@ class RequestScopedControllerTest @Autowired constructor(
                     "name": "Avril Lavigne"
                   }
                 ]
-                    """
+                    }"""
                 )
             )
     }
 
     @Test
     fun `returns custom resolver data`() {
-        mockMvc.perform(get("/scoped/artists?fields=albumCount"))
+        mockMvc.perform(get("/scoped/artists?fields=artists/albumCount"))
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(
                 content().json(
-                    """
-                [
+                    """{
+                 "artists": [
                   {
                     "albumCount": 1
                   },
@@ -63,20 +63,20 @@ class RequestScopedControllerTest @Autowired constructor(
                     "albumCount": 1
                   }
                 ]
-                    """
+                    }"""
                 )
             )
     }
 
     @Test
     fun `returns data loader data`() {
-        mockMvc.perform(get("/scoped/artists?fields=name,bestSongs:songs(title)"))
+        mockMvc.perform(get("/scoped/artists?fields=artists(name,bestSongs:songs(title))"))
             .andDo(print())
             .andExpect(status().isOk)
             .andExpect(
                 content().json(
-                    """
-               [
+                    """{
+               "artists": [
                   {
                     "name": "Avril Lavigne",
                     "bestSongs": [
@@ -112,7 +112,7 @@ class RequestScopedControllerTest @Autowired constructor(
                     ]
                   }
                 ] 
-                    """
+                  } """
                 )
             )
     }

@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.CompletableFuture
 
+data class ListArtistsResponse(val artists: List<Artist>)
+
 @RestController
 @FieldMaskResponseBody
 class RequestScopedController(private val repository: MusicRepository) {
     @RequestMapping("/scoped/artists", method = [RequestMethod.GET])
-    fun ListScopedArtists(): ResponseEntity<List<*>> {
-        return ResponseEntity.ok(repository.findAllArtists())
+    fun listScopedArtists(): ResponseEntity<*> {
+        return ResponseEntity.ok(ListArtistsResponse(repository.findAllArtists()))
     }
 }
 

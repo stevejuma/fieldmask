@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController
 @FieldMaskResponseBody
 class TestController(private val repository: MusicRepository) {
     @RequestMapping("/artists", method = [RequestMethod.GET])
-    fun listArtists(): ResponseEntity<List<*>> {
+    fun listArtists(): ResponseEntity<*> {
         return ResponseEntity.ok(repository.findAllArtists())
     }
 

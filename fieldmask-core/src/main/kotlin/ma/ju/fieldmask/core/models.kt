@@ -44,6 +44,28 @@ fun isPrimitive(any: Any?): Boolean {
         primitives.any { it.isAssignableFrom(clazz) }
 }
 
+private fun extractMethod(
+    resolver: FieldResolver<*>?,
+    vararg arguments: Any?
+): Map<Method, Pair<FieldResolver<*>, List<Any?>>> {
+    val resolverMethods = mutableMapOf<Method, Pair<FieldResolver<*>, List<Any?>>>()
+    resolver ?: return resolverMethods
+    val methods = mapOf(
+        listOf<Class<*>>(resolver.dataType(), BeanMask.Context::class.java) to arguments.toList(),
+        listOf<Class<*>>(resolver.dataType()) to if (arguments.isEmpty()) listOf() else listOf(arguments.first())
+    )
+    for ((args, values) in methods) {
+        for (name in resolver.javaClass.declaredMethods.map { it.name }) {
+            try {
+                val method = resolver.javaClass.getMethod(name, *args.toTypedArray())
+                resolverMethods[method] = Pair(resolver, values)
+            } catch (e: NoSuchMethodException) {
+            }
+        }
+    }
+    return resolverMethods
+}
+
 /**
  * FieldResolver is used to resolve properties for fields of type T. Resolvers always
  * take precedence over fields defined in the object. The name of the functions defined
@@ -472,16 +494,15 @@ object BeanMask {
             paths.addAll(
                 BeanPaths.paths(
                     instance.javaClass,
-                    BeanPaths.Context(options = context.options.pathOptions)
+                    BeanPaths.Context(options = context.options.pathOptions, resolvers = context.options.resolversMap)
                 )
             )
             resolverMethods.keys.forEach { m ->
-                paths.add(Path(m.name))
+                paths.add(context.root.join(Segment(m.name)))
                 if (m.name.startsWith("get")) {
-                    paths.add(Path(m.name.replaceFirst("get", "").decapitalize()))
+                    paths.add(context.root.join(Segment(m.name.replaceFirst("get", "").decapitalize())))
                 }
             }
-            paths.addAll(resolverMethods.keys.map { Path(it.name) })
             var beanPaths = FieldMask(paths)
             val invalid =
                 context.mask.withPrefix(context.root, true).values().filter { beanPaths.matches(it).paths.isEmpty() }
@@ -536,29 +557,6 @@ object BeanMask {
                 context.depth.pop()
             }
         }
-    }
-
-    private fun extractMethod(
-        resolver: FieldResolver<*>?,
-        instance: Any?,
-        context: Context
-    ): Map<Method, Pair<FieldResolver<*>, List<Any?>>> {
-        val resolverMethods = mutableMapOf<Method, Pair<FieldResolver<*>, List<Any?>>>()
-        resolver ?: return resolverMethods
-        val methods = mapOf(
-            listOf<Class<*>>(resolver.dataType(), Context::class.java) to listOf(instance, context),
-            listOf<Class<*>>(resolver.dataType()) to listOf(instance)
-        )
-        for ((args, values) in methods) {
-            for (name in resolver.javaClass.declaredMethods.map { it.name }) {
-                try {
-                    val method = resolver.javaClass.getMethod(name, *args.toTypedArray())
-                    resolverMethods[method] = Pair(resolver, values)
-                } catch (e: NoSuchMethodException) {
-                }
-            }
-        }
-        return resolverMethods
     }
 
     private fun addField(
@@ -622,7 +620,8 @@ object BeanPaths {
          * Property indicating whether we should include private methods as part of the
          * bean properties
          */
-        val options: PathOptions = PathOptions()
+        val options: PathOptions = PathOptions(),
+        val resolvers: Map<Class<*>, FieldResolver<*>> = mutableMapOf()
     )
 
     private var defaultContext = Context()
@@ -647,6 +646,13 @@ object BeanPaths {
         }
         val base = Path()
         val paths = mutableListOf<Path>()
+        val resolverMethods = extractMethod(context.resolvers[klass])
+        resolverMethods.keys.forEach { m ->
+            paths.add(Path(m.name))
+            if (m.name.startsWith("get")) {
+                paths.add(Path(m.name.replaceFirst("get", "").decapitalize()))
+            }
+        }
         val cacheKey = Pair(context.options, klass)
         if (!context.cache.containsKey(cacheKey)) {
             context.cache[cacheKey] = paths
