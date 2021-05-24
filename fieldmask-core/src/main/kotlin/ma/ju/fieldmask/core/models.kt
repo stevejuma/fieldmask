@@ -443,7 +443,9 @@ object BeanMask {
     }
 
     private fun visitList(instance: Iterable<*>?, model: ListModel<*>, context: Context) {
-        if (instance == null) return
+        if (instance == null) {
+            return
+        }
         for ((i, child) in instance.withIndex()) {
             context.depth.push(i.toString())
             if (child == null || isPrimitive(child)) {
@@ -474,7 +476,9 @@ object BeanMask {
 
     @Suppress("UNCHECKED_CAST")
     private fun visitPojo(instance: Any?, model: MapModel<*>, context: Context) {
-        if (instance == null) return
+        if (instance == null) {
+            return
+        }
         val klass = if (instance is Class<*>) instance else instance.javaClass
         val properties = instance::class.memberProperties.filter {
             val accessible = isFieldAccessible(it)
@@ -537,13 +541,11 @@ object BeanMask {
                 continue
             }
 
-            if (value != null) {
-                context.depth.push(m.paths.last().toString())
-                val field = m.paths.last()
-                addField(field, value!!, model, context, isPrimitive(value!!))
-                props.add(m.paths.last().value)
-                context.depth.pop()
-            }
+            context.depth.push(m.paths.last().toString())
+            val field = m.paths.last()
+            addField(field, value!!, model, context, isPrimitive(value!!))
+            props.add(m.paths.last().value)
+            context.depth.pop()
         }
 
         for ((method, args) in resolverMethods) {
@@ -551,22 +553,20 @@ object BeanMask {
             val m = context.matches(path)
             if (props.contains(method.name) || m.paths.isEmpty()) continue
             val value = method.invoke(args.first, *args.second.toTypedArray())
-            if (value != null) {
-                context.depth.push(m.paths.last().toString())
-                addField(m.paths.last(), value, model, context, isPrimitive(value))
-                context.depth.pop()
-            }
+            context.depth.push(m.paths.last().toString())
+            addField(m.paths.last(), value, model, context, isPrimitive(value))
+            context.depth.pop()
         }
     }
 
     private fun addField(
         field: Segment,
-        value: Any,
+        value: Any?,
         model: MapModel<*>,
         context: Context,
         primitive: Boolean
     ) {
-        if (primitive) {
+        if (primitive || value == null) {
             model.add(field.field, value)
             return
         }
@@ -584,7 +584,7 @@ object BeanMask {
             }
         }
 
-        if (isPrimitive(data)) {
+        if (isPrimitive(data) || data == null) {
             model.add(field.field, data)
             return
         }
