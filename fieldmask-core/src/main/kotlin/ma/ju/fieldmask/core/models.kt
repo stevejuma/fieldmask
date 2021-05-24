@@ -543,7 +543,7 @@ object BeanMask {
 
             context.depth.push(m.paths.last().toString())
             val field = m.paths.last()
-            addField(field, value!!, model, context, isPrimitive(value!!))
+            addField(field, value, model, context, isPrimitive(value))
             props.add(m.paths.last().value)
             context.depth.pop()
         }
