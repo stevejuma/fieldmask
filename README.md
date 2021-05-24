@@ -18,11 +18,11 @@ repositories {
 
 dependencies {
   // If using the core library only
-  implementation 'ma.ju.fieldmask:fieldmask-core:1.0.6'
+  implementation 'ma.ju.fieldmask:fieldmask-core:1.0.7'
   // If using Spring Boot
-  implementation 'ma.ju.fieldmask:fieldmask-starter:1.0.6'
+  implementation 'ma.ju.fieldmask:fieldmask-starter:1.0.7'
   // If using Spring MVC
-  implementation 'ma.ju.fieldmask:fieldmask-spring:1.0.6'
+  implementation 'ma.ju.fieldmask:fieldmask-spring:1.0.7'
 }
 ```
 
@@ -32,19 +32,19 @@ Maven:
 <dependency>
   <groupId>ma.ju.fieldmask</groupId>
   <artifactId>fieldmask-core</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
 </dependency>
 
 <dependency>
   <groupId>ma.ju.fieldmask</groupId>
   <artifactId>fieldmask-starter</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
 </dependency>
 
 <dependency>
   <groupId>ma.ju.fieldmask</groupId>
   <artifactId>fieldmask-spring</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
 </dependency>
 ```
 # FieldMask
