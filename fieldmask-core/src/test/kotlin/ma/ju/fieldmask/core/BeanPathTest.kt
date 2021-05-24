@@ -8,6 +8,7 @@ data class DemoBean(
     val nested: Set<NestedDemoBean>,
     val intList: List<Int>,
     val strList: List<String>,
+    val objList: List<Any?>,
     val and: MutableList<DemoBean> = mutableListOf(),
 )
 
@@ -19,6 +20,6 @@ class BeanPathTest {
     @Test
     fun `fetches the correct paths from a bean`() {
         val paths = BeanPaths.paths(DemoBean::class.java)
-        assertEquals("id,and/id,intList,nested/uuid,strList", "${paths.joinToString(",")}")
+        assertEquals("id,and/id,intList,nested/uuid,objList,strList", "${paths.joinToString(",")}")
     }
 }

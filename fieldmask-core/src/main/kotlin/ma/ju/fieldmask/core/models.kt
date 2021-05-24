@@ -641,7 +641,7 @@ object BeanPaths {
     }
 
     private fun visitPojo(klass: Class<*>, fields: MutableList<Path>, root: Path, context: Context) {
-        if (isPrimitive(klass)) {
+        if (isPrimitive(klass) || klass == Any::class.java) {
             fields.add(root)
             return
         }
