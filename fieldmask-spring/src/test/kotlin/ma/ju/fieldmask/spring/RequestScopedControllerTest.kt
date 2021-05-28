@@ -69,6 +69,13 @@ class RequestScopedControllerTest @Autowired constructor(
     }
 
     @Test
+    fun `throws exception on invalid parameters`() {
+        mockMvc.perform(get("/scoped/artists?fields=artists(name,songs[unknown: 2](title))"))
+            .andDo(print())
+            .andExpect(status().isBadRequest)
+    }
+
+    @Test
     fun `returns custom resolver data with parameters`() {
         mockMvc.perform(get("/scoped/artists?fields=artists(name,songs[limit: 2](title))"))
             .andDo(print())

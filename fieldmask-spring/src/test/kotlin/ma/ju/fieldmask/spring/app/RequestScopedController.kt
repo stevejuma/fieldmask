@@ -12,6 +12,7 @@ import org.dataloader.DataLoaderRegistry
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
+import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
@@ -25,6 +26,16 @@ class RequestScopedController(private val repository: MusicRepository) {
     @RequestMapping("/scoped/artists", method = [RequestMethod.GET])
     fun listScopedArtists(): ResponseEntity<*> {
         return ResponseEntity.ok(ListArtistsResponse(repository.findAllArtists()))
+    }
+
+    @ExceptionHandler(Exception::class)
+    fun handleError(e: Exception): ResponseEntity<Any> {
+        return ResponseEntity.badRequest().body(
+            mapOf(
+                "type" to e.javaClass.simpleName,
+                "message" to e.message
+            )
+        )
     }
 }
 
