@@ -1,5 +1,6 @@
 package ma.ju.fieldmask.core
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -31,6 +32,27 @@ class QueryParserTest {
                 fields = parser.parse(q)
             }
             assertEquals(expected, fields.joinToString(","), q)
+        }
+    }
+
+    @Test
+    fun `parses segment arguments`() {
+        val mapper = ObjectMapper()
+        mapOf(
+            "empty" to "[]",
+            "map[int: 0 float: 0.35 string: 'string' term: term true: true false:false]/to/path" to """[{"map":{"int":0,"float":0.35,"string":"string","term":"term","true":true,"false":false}}]""",
+            "/path/to/list[array:[0 0.35 'string']]" to """[{"list":{"array":[0,0.35,"string"]}}]"""
+        ).forEach { (q, expected) ->
+            val fields = parser.parse(q)
+            val args = mutableListOf<Any>()
+            for (field in fields) {
+                for (segment in field.paths) {
+                    if (segment.arguments.isNotEmpty()) {
+                        args.add(mapOf(segment.value to segment.arguments))
+                    }
+                }
+            }
+            assertEquals(expected, mapper.writeValueAsString(args), q)
         }
     }
 }

@@ -1,6 +1,9 @@
 package ma.ju.fieldmask.spring
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.MapperFeature
+import com.fasterxml.jackson.databind.ObjectMapper
 import ma.ju.fieldmask.core.BeanMask
 import ma.ju.fieldmask.core.ParseException
 import ma.ju.fieldmask.core.UnknownFieldMaskException
@@ -98,4 +101,21 @@ class FieldMaskControllerAdvice(
         logger.debug("Body: $model")
         return model
     }
+}
+
+val objectMapper = ObjectMapper().apply {
+    configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true)
+    findAndRegisterModules()
+}
+
+fun <T> BeanMask.Context.parameters(type: Class<T>, mapper: ObjectMapper = objectMapper): T {
+    return mapper.convertValue(this.arguments, type)
+}
+
+fun <T> BeanMask.Context.parameters(type: TypeReference<T>, mapper: ObjectMapper = objectMapper): T {
+    return mapper.convertValue(this.arguments, type)
+}
+
+inline fun <reified T> BeanMask.Context.parameters(mapper: ObjectMapper = objectMapper): T {
+    return mapper.convertValue(this.arguments, object : TypeReference<T>() {})
 }

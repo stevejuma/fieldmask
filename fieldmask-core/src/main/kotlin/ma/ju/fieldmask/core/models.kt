@@ -244,6 +244,7 @@ object BeanMask {
      * @property options The options for the field processing
      * @property futures The list of futures that are waiting to be loaded
      * @property properties A map with generic properties that Loaders can use to store state
+     * @property arguments map with additional properties to be passed to resolvers
      */
     data class Context(
         val mask: FieldMask,
@@ -251,6 +252,7 @@ object BeanMask {
         val options: MaskOptions = MaskOptions(),
         val futures: MutableList<CompletableFuture<*>> = mutableListOf(),
         val properties: MutableMap<String, Any?> = mutableMapOf(),
+        val arguments: Map<String, Any?> = mutableMapOf(),
         val depth: Stack<String> = Stack()
     ) {
         /**
@@ -528,7 +530,10 @@ object BeanMask {
             resolverMethods.filter {
                 methodNames.contains(it.key.name)
             }.maxByOrNull { it.value.second.size }?.let { (method, args) ->
-                value = method.invoke(args.first, *args.second.toTypedArray())
+                val params = args.second.map {
+                    if (it is Context) it.copy(arguments = m.paths.last().arguments) else it
+                }
+                value = method.invoke(args.first, *params.toTypedArray())
                 resolved = true
             }
             val nested = context.mask.values().any { it.startsWith(m.paths) && it.size > m.size }
@@ -552,7 +557,10 @@ object BeanMask {
             val path = Segment(method.name)
             val m = context.matches(path)
             if (props.contains(method.name) || m.paths.isEmpty()) continue
-            val value = method.invoke(args.first, *args.second.toTypedArray())
+            val params = args.second.map {
+                if (it is Context) it.copy(arguments = m.paths.last().arguments) else it
+            }
+            val value = method.invoke(args.first, *params.toTypedArray())
             context.depth.push(m.paths.last().toString())
             addField(m.paths.last(), value, model, context, isPrimitive(value))
             context.depth.pop()

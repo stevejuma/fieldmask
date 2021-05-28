@@ -69,6 +69,43 @@ class RequestScopedControllerTest @Autowired constructor(
     }
 
     @Test
+    fun `returns custom resolver data with parameters`() {
+        mockMvc.perform(get("/scoped/artists?fields=artists(name,songs[limit: 2](title))"))
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andExpect(
+                content().json(
+                    """{
+               "artists": [
+                  {
+                    "name": "Avril Lavigne",
+                    "songs": [
+                      {
+                        "title": "Losing Grip"
+                      },
+                      {
+                        "title": "Complicated"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Taylor Swift",
+                    "songs": [
+                      {
+                        "title": "FearLess"
+                      },
+                      {
+                        "title": "Fifteen"
+                      }
+                    ]
+                  }
+                ] 
+                  } """
+                )
+            )
+    }
+
+    @Test
     fun `returns data loader data`() {
         mockMvc.perform(get("/scoped/artists?fields=artists(name,bestSongs:songs(title))"))
             .andDo(print())

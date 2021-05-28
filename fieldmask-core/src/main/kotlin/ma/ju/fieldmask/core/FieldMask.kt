@@ -157,5 +157,8 @@ open class FieldMask(fields: List<Path> = listOf(), private val separator: Strin
             val parser = FieldQueryParser()
             return FieldMask(parser.parse(query), separator)
         }
+
+        fun matcherFor(query: List<String>, separator: String = "/") =
+            matcherFor(query.joinToString(","), separator)
     }
 }

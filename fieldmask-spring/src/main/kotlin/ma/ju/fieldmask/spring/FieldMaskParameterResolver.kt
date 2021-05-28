@@ -25,7 +25,20 @@ class FieldMaskParameterResolver(
     ): Any? {
         val request = webRequest.nativeRequest as HttpServletRequest
         val annotation = parameter.getParameterAnnotation(FieldMaskParameter::class.java)!!
-        val fields = request.getParameterValues(annotation.name)?.toList()?.joinToString(",") ?: annotation.defaultValue
+        var fields = mutableListOf<String>()
+        for (type in annotation.`in`) {
+            when (type) {
+                FieldMaskIn.REQUEST -> {
+                    request.getParameterValues(annotation.name)?.toList()?.joinToString(",")?.let {
+                        fields.add(it)
+                    }
+                }
+                FieldMaskIn.HEADER -> {
+                    request.getHeader(annotation.header)
+                }
+            }
+        }
+        if (fields.isEmpty() && annotation.defaultValue.isNotBlank()) fields.add(annotation.defaultValue)
         val mask: FieldMask = FieldMask.matcherFor(fields, properties.separator)
         if (parameter.parameterType.isAssignableFrom(FieldMask::class.java)) {
             return mask

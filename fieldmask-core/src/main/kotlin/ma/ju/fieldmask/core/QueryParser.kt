@@ -38,7 +38,7 @@ class SyntaxErrorListener(val errors: MutableList<String> = mutableListOf()) : B
  * @property value The value of the segment
  * @property alias The alias of the segment if any. Defaults to the value if not provided
  */
-data class Segment(val value: String, val alias: String = value) {
+data class Segment(val value: String, val alias: String = value, val arguments: Map<String, Any?> = mutableMapOf()) {
     /**
      * A property indicating if the segment has an alias
      */
@@ -344,6 +344,8 @@ class FieldQueryParser {
 class FieldsQueryListener(private val separator: String) : FieldsGrammarBaseListener() {
     private var roots = Stack<Field>()
     private var root = Field(Path(separator = separator))
+    private var arguments = Stack<MutableMap<String, Any?>>()
+    private var values = Stack<Any?>()
 
     /**
      * Fetches the result of a parsing run. Throws [ParseException] if there
@@ -395,5 +397,60 @@ class FieldsQueryListener(private val separator: String) : FieldsGrammarBaseList
             }
         }
         root.field.add(segment)
+    }
+
+    override fun enterArguments(ctx: FieldsGrammarParser.ArgumentsContext) {
+        arguments.push(linkedMapOf())
+    }
+
+    override fun exitArguments(ctx: FieldsGrammarParser.ArgumentsContext) {
+        val segment = root.field.paths.removeLast()
+        root.field.paths.add(segment.copy(arguments = arguments.pop()))
+    }
+
+    override fun exitArgument(ctx: FieldsGrammarParser.ArgumentContext) {
+        arguments.peek()[ctx.name().text] = values.pop()
+    }
+
+    override fun enterIntValue(ctx: FieldsGrammarParser.IntValueContext) {
+        values.push(ctx.INT().text.toInt())
+    }
+
+    override fun enterFloatValue(ctx: FieldsGrammarParser.FloatValueContext) {
+        values.push(ctx.FLOAT().text.toDouble())
+    }
+
+    override fun enterStringValue(ctx: FieldsGrammarParser.StringValueContext) {
+        val text = ctx.PHRASE().text
+        values.push(FieldQueryParser.discardEscapeChar(text.substring(1, text.length - 1)))
+    }
+
+    override fun enterBooleanValue(ctx: FieldsGrammarParser.BooleanValueContext) {
+        values.push(ctx.text == "true")
+    }
+
+    override fun enterNullValue(ctx: FieldsGrammarParser.NullValueContext) {
+        values.push(null)
+    }
+
+    override fun enterTermValue(ctx: FieldsGrammarParser.TermValueContext) {
+        values.push(ctx.IDENTIFIER().text)
+    }
+
+    override fun enterObjectValue(ctx: FieldsGrammarParser.ObjectValueContext) {
+        values.push(linkedMapOf<String, Any?>())
+    }
+
+    override fun exitObjectField(ctx: FieldsGrammarParser.ObjectFieldContext) {
+        (values.peek() as MutableMap<String, Any?>)[ctx.name().text] = values.pop()
+    }
+
+    override fun enterListValue(ctx: FieldsGrammarParser.ListValueContext) {
+        values.push(mutableListOf<Any?>())
+    }
+
+    override fun exitListItem(ctx: FieldsGrammarParser.ListItemContext) {
+        val item = values.pop()
+        (values.peek() as MutableList<Any?>).add(item)
     }
 }

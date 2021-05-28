@@ -6,6 +6,7 @@ import ma.ju.fieldmask.core.FieldResolver
 import ma.ju.fieldmask.spring.DefaultFieldMaskContextBuilder
 import ma.ju.fieldmask.spring.FieldMaskProperties
 import ma.ju.fieldmask.spring.FieldMaskResponseBody
+import ma.ju.fieldmask.spring.parameters
 import org.dataloader.DataLoader
 import org.dataloader.DataLoaderRegistry
 import org.springframework.beans.factory.annotation.Autowired
@@ -39,6 +40,8 @@ interface FieldDataLoader<K, V> {
     fun loader(): DataLoader<K, V>
 }
 
+data class PageInput(val limit: Int = -1)
+
 @Component
 class ArtistFieldResolver(private val repository: MusicRepository) : FieldResolver<Artist> {
     fun albumCount(artist: Artist): Int {
@@ -46,9 +49,12 @@ class ArtistFieldResolver(private val repository: MusicRepository) : FieldResolv
     }
 
     fun songs(artist: Artist, context: BeanMask.Context): CompletableFuture<List<Song>> {
+        val input: PageInput = context.parameters()
         val registry = context.properties["dataLoaderRegistry"] as DataLoaderRegistry
         val loader: DataLoader<Long, List<Song>> = registry.getDataLoader("ArtistSongsLoader")
-        return loader.load(artist.id)
+        return loader.load(artist.id).thenApply {
+            if (input.limit > 0) it.subList(0, listOf(input.limit, it.size).minOrNull()!!) else it
+        }
     }
 
     fun albums(artist: Artist, context: BeanMask.Context): CompletableFuture<List<String>> {

@@ -22,5 +22,9 @@ annotation class EnableFieldMask
 @Retention(AnnotationRetention.RUNTIME)
 annotation class FieldMaskParameter(
     val name: String = "fields",
-    val defaultValue: String = ""
+    val defaultValue: String = "",
+    val header: String = "X-Field-Mask",
+    val `in`: Array<FieldMaskIn> = [ FieldMaskIn.HEADER, FieldMaskIn.REQUEST ],
 )
+
+enum class FieldMaskIn { HEADER, REQUEST }
