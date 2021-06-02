@@ -21,7 +21,11 @@ import kotlin.reflect.jvm.jvmErasure
  * @return boolean indicating the field visibility
  */
 fun isFieldAccessible(property: KProperty1<*, *>): Boolean {
-    return property.javaGetter?.modifiers?.let { !Modifier.isPrivate(it) } ?: false
+    return try {
+        property.javaGetter?.modifiers?.let { !Modifier.isPrivate(it) } ?: false
+    } catch (e: Exception) {
+        false
+    }
 }
 
 /**
