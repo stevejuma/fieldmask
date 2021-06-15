@@ -341,6 +341,7 @@ class FieldQueryParser {
  * ANTLR grammar Listener for parsing the AST
  * @property separator The separator to use for the created [Path]
  */
+@Suppress("UNCHECKED_CAST")
 class FieldsQueryListener(private val separator: String) : FieldsGrammarBaseListener() {
     private var roots = Stack<Field>()
     private var root = Field(Path(separator = separator))

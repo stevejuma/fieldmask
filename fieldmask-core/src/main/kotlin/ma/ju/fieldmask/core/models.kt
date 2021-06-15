@@ -28,19 +28,72 @@ fun isFieldAccessible(property: KProperty1<*, *>): Boolean {
     }
 }
 
+fun memberProps(source: KClass<*>, includePrivate: Boolean): List<KProperty1<*, *>> {
+    return try {
+        source.memberProperties.filter {
+            try {
+                val accessible = isFieldAccessible(it)
+                if (includePrivate) {
+                    if (!accessible) {
+                        it.isAccessible = true
+                    }
+                    true
+                } else {
+                    accessible
+                }
+            } catch (e: Exception) {
+                false
+            }
+        }
+    } catch (e: Exception) {
+        mutableListOf()
+    }
+}
+
 /**
  * Checks if the specified [any] object is a primitive value
  * @return boolean indicating if the object is a primitive
  */
-fun isPrimitive(any: Any?): Boolean {
+fun isPrimitive(any: Any?, cache: MutableMap<String, Boolean> = mutableMapOf()): Boolean {
+    any ?: return true
+    val key = "${any.javaClass.hashCode()}:${any.hashCode()}"
+    cache[key]?.let { return it }
+
+    val isPrimitive = if (any is Collection<*>) {
+        any.all { isPrimitive(it) }
+    } else isScalar(any)
+    cache[key] = isPrimitive
+    return isPrimitive
+}
+
+fun isScalar(any: Any?): Boolean {
     any ?: return true
     val clazz = if (any is Class<*>) any else any.javaClass
     val primitives = setOf(
-        String::class.java, Number::class.java, java.lang.Boolean::class.java, Char::class.java,
-        Date::class.java, Double::class.java, Long::class.java, Integer::class.java, Byte::class.java, Character::class.java,
-        Short::class.java, Integer::class.java, Float::class.java, Void::class.java, Instant::class.java,
-        java.lang.Boolean.TYPE, java.lang.Byte.TYPE, Character.TYPE, java.lang.Short.TYPE,
-        Integer.TYPE, java.lang.Long.TYPE, java.lang.Double.TYPE, java.lang.Float.TYPE, Void.TYPE
+        String::class.java,
+        Number::class.java,
+        java.lang.Boolean::class.java,
+        Char::class.java,
+        Date::class.java,
+        Double::class.java,
+        Long::class.java,
+        Integer::class.java,
+        Byte::class.java,
+        Character::class.java,
+        Short::class.java,
+        Integer::class.java,
+        Float::class.java,
+        Void::class.java,
+        Instant::class.java,
+        java.lang.Boolean.TYPE,
+        java.lang.Byte.TYPE,
+        Character.TYPE,
+        java.lang.Short.TYPE,
+        Integer.TYPE,
+        java.lang.Long.TYPE,
+        java.lang.Double.TYPE,
+        java.lang.Float.TYPE,
+        Void.TYPE
     )
     return clazz.isPrimitive ||
         clazz.isEnum ||
@@ -381,17 +434,7 @@ object BeanMask {
 
     private fun applyPojo(source: Any, target: Any, context: Context) {
         if (applyCached(source, context)) return
-        val properties = source::class.memberProperties.filter {
-            val accessible = isFieldAccessible(it)
-            if (context.options.pathOptions.includePrivate) {
-                if (!accessible) {
-                    it.isAccessible = true
-                }
-                true
-            } else {
-                accessible
-            }
-        }
+        val properties = memberProps(source::class, context.options.pathOptions.includePrivate)
         for (property in properties) {
             val p = property as KProperty1<Any?, *>
             val m = context.matches(Segment(p.name))
@@ -486,17 +529,7 @@ object BeanMask {
             return
         }
         val klass = if (instance is Class<*>) instance else instance.javaClass
-        val properties = instance::class.memberProperties.filter {
-            val accessible = isFieldAccessible(it)
-            if (context.options.pathOptions.includePrivate) {
-                if (!accessible) {
-                    it.isAccessible = true
-                }
-                true
-            } else {
-                accessible
-            }
-        }.sortedBy { it.name }
+        val properties = memberProps(instance::class, context.options.pathOptions.includePrivate).sortedBy { it.name }
         val resolverMethods = extractMethod(context.options.resolversMap[klass], instance, context)
 
         if (context.options.validateMasks) {
@@ -669,17 +702,7 @@ object BeanPaths {
         if (!context.cache.containsKey(cacheKey)) {
             context.cache[cacheKey] = paths
             val classes = mutableMapOf<Segment, Class<*>>()
-            klass.kotlin.memberProperties.filter {
-                val accessible = isFieldAccessible(it)
-                if (context.options.includePrivate) {
-                    if (!accessible) {
-                        it.isAccessible = true
-                    }
-                    true
-                } else {
-                    accessible
-                }
-            }.sortedBy { it.name }.forEach { p ->
+            memberProps(klass.kotlin, context.options.includePrivate).sortedBy { it.name }.forEach { p ->
                 val t = p.javaField?.type ?: p.returnType.jvmErasure.java
                 when {
                     Iterable::class.java.isAssignableFrom(t) -> {
