@@ -119,7 +119,7 @@ reduce the complexity of response messages as well as improve
 performance over the wire.
 
 ## Getting FieldMask
-Catnap libraries are available from JCenter.
+FieldMask libraries are available from Maven Central.
 
 * [fieldmask-core](fieldmask-core) - Use this library if you are only interested in the fieldmask masking functionality
 * [fieldmask-spring](fieldmask-spring) - Configuration for use with spring MVC
